@@ -309,6 +309,18 @@ $items = $service->getCollectionItemsByFolder([
 ]);
 ```
 
+#### Change Listing, authenticated as the seller
+
+```php
+<?php
+
+$response = $client->changeListing([
+    'listing_id' => '123',
+    'condition' => 'Good (G)',
+    'price' => 3.49,
+]);
+```
+
 ## Documentation
 Further documentation can be found at the [Discogs API v2.0 Documentation](http://www.discogs.com/developers/index.html).
 
