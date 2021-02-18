@@ -33,6 +33,16 @@ return [
                     'location' => 'uri',
                     'required' => true
                 ],
+                'sort' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false
+                ],
+                'sort_order' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false
+                ],
                 'per_page' => [
                     'type' => 'integer',
                     'location' => 'query',
@@ -291,6 +301,19 @@ return [
                 ]
             ]
         ],
+        'uploadInventory' => [
+            'summary' => 'Add listings to inventory using CSV',
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/add',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'upload' => [
+                    'type' => 'any',
+                    'location' => 'multipart',
+                    'required' => true
+                ]
+            ]
+        ],
         'getOrder' => [
             'httpMethod' => 'GET',
             'uri' => 'marketplace/orders/{order_id}',
@@ -320,6 +343,21 @@ return [
                 ],
                 'sort_order' => [
                     'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
+                ],
+                'created_before' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
+                ],
+                'created_after' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
+                ],
+                'archived' => [
+                    'type' => 'boolean',
                     'location' => 'query',
                     'required' => false,
                 ]
