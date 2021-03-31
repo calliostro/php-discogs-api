@@ -370,7 +370,7 @@ return [
                     'required' => false,
                 ],
                 'archived' => [
-                    'type' => 'boolean',
+                    'type' => 'string',
                     'location' => 'query',
                     'required' => false,
                 ]
