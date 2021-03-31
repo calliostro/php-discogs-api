@@ -314,6 +314,19 @@ return [
                 ]
             ]
         ],
+        'deleteInventory' => [
+            'summary' => 'Upload a CSV of listings to delete from your inventory.',
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/delete',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'upload' => [
+                    'type' => 'any',
+                    'location' => 'multipart',
+                    'required' => true
+                ]
+            ]
+        ],
         'getOrder' => [
             'httpMethod' => 'GET',
             'uri' => 'marketplace/orders/{order_id}',
