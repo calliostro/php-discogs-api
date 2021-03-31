@@ -301,8 +301,8 @@ return [
                 ]
             ]
         ],
-        'uploadInventory' => [
-            'summary' => 'Add listings to inventory using CSV',
+        'addInventory' => [
+            'summary' => 'Upload a CSV of listings to add to your inventory.',
             'httpMethod' => 'POST',
             'uri' => 'inventory/upload/add',
             'responseModel' => 'GetResponse',
