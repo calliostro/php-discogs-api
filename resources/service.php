@@ -399,6 +399,42 @@ return [
                 ]
             ]
         ],
+        'getOrderMessages' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'summary' => 'Returns a list of the order’s messages with the most recent first.',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'order_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ]
+            ]
+        ],
+        'addOrderMessage' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'summary' => 'Adds a new message to the order’s message log.',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'order_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ],
+                'message' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'status' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ]
+            ]
+        ],
         'createListing' => [
             'httpMethod' => 'POST',
             'uri' => '/marketplace/listings',
