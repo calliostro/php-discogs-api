@@ -93,14 +93,6 @@ $client = ClientFactory::factory([
         ],
     ]
 ]);
-
-// New Version
-$client = ClientFactory::factory([
-    'query' => [
-        'key' => 'my-key',
-        'secret' => 'my-secret',
-    ],
-]);
 ```
 
 Authenticate with Personal access token, you can get it from https://www.discogs.com/settings/developers
