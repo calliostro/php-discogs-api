@@ -44,7 +44,7 @@ class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
 
         $difference = $after - $before;
         // Should be at least 2 seconds
-        $this->assertEqualsWithDelta($difference, 2, 0.1);
+        $this->assertTrue($difference > 4);
     }
 
     public function testWithoutThrottle()
@@ -94,6 +94,6 @@ class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
         $after = microtime(true);
         $difference = $after - $before;
 
-        $this->assertEqualsWithDelta($difference, 1.5, 0.1);
+        $this->assertTrue($difference > 3);
     }
 }

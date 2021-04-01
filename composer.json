@@ -29,5 +29,8 @@
     },
     "suggest": {
         "ricbra/discogs-bundle": "For integrating Discogs into Symfony2"
+    },
+    "scripts":{
+        "test": "phpunit tests"
     }
 }

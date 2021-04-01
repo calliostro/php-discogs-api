@@ -47,7 +47,7 @@ class ThrottleSubscriber
     public function delay()
     {
         return function ($retries) {
-            return $this->throttle * $retries;
+            return $this->throttle * (2 ** $retries);
         };
     }
 }

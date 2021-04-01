@@ -33,6 +33,16 @@ return [
                     'location' => 'uri',
                     'required' => true
                 ],
+                'sort' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false
+                ],
+                'sort_order' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false
+                ],
                 'per_page' => [
                     'type' => 'integer',
                     'location' => 'query',
@@ -291,6 +301,32 @@ return [
                 ]
             ]
         ],
+        'addInventory' => [
+            'summary' => 'Upload a CSV of listings to add to your inventory.',
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/add',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'upload' => [
+                    'type' => 'any',
+                    'location' => 'multipart',
+                    'required' => true
+                ]
+            ]
+        ],
+        'deleteInventory' => [
+            'summary' => 'Upload a CSV of listings to delete from your inventory.',
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/delete',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'upload' => [
+                    'type' => 'any',
+                    'location' => 'multipart',
+                    'required' => true
+                ]
+            ]
+        ],
         'getOrder' => [
             'httpMethod' => 'GET',
             'uri' => 'marketplace/orders/{order_id}',
@@ -322,6 +358,21 @@ return [
                     'type' => 'string',
                     'location' => 'query',
                     'required' => false,
+                ],
+                'created_before' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
+                ],
+                'created_after' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
+                ],
+                'archived' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false,
                 ]
             ]
         ],
@@ -343,6 +394,42 @@ return [
                 ],
                 'shipping' => [
                     'type' => 'number',
+                    'location' => 'json',
+                    'required' => false,
+                ]
+            ]
+        ],
+        'getOrderMessages' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'summary' => 'Returns a list of the order’s messages with the most recent first.',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'order_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ]
+            ]
+        ],
+        'addOrderMessage' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'summary' => 'Adds a new message to the order’s message log.',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'order_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ],
+                'message' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'status' => [
+                    'type' => 'string',
                     'location' => 'json',
                     'required' => false,
                 ]
@@ -410,6 +497,69 @@ return [
                     'required' => false,
                 ]
             ]
+        ],
+        'changeListing' => [
+            'httpMethod' => 'POST',
+            'uri' => '/marketplace/listings/{listing_id}',
+            'summary' => 'Change a Marketplace listing.',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'listing_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true,
+                ],
+                'condition' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'sleeve_condition' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'price' => [
+                    'type' => 'number',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'comments' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'allow_offers' => [
+                    'type' => 'boolean',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'status' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'external_id' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'location' => [
+                    'type' => 'string',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'weight' => [
+                    'type' => 'number',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+                'format_quantity' => [
+                    'type' => 'number',
+                    'location' => 'json',
+                    'required' => false,
+                ],
+            ],
         ],
         'deleteListing' => [
             'httpMethod' => 'DELETE',
