@@ -83,17 +83,18 @@ As stated in the Discogs Authentication documentation:
 > - To easily access your own user account information, use a *User token*.
 > - To get access to an endpoint that requires authentication and build 3rd party apps, use a *Consumer Key and Secret*.
 
-With the Discogs Php API you can add your credentials to each request by adding a `query` key to your own defaults like this:
+~~With the Discogs Php API you can add your credentials to each request by adding a `query` key to your own defaults like this:~~
+
+Instead query use Authorization header
 ```php
 $client = ClientFactory::factory([
-    'defaults' => [
-        'query' => [
-            'key' => 'my-key',
-            'secret' => 'my-secret',
-        ],
-    ]
+'headers' => [
+        'Authorization' => "Discogs key=key_here, secret=secret_here",
+    ],
 ]);
 ```
+
+
 
 Authenticate with Personal access token, you can get it from https://www.discogs.com/settings/developers
 ```php
