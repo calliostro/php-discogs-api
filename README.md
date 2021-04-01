@@ -85,10 +85,10 @@ As stated in the Discogs Authentication documentation:
 
 ~~With the Discogs Php API you can add your credentials to each request by adding a `query` key to your own defaults like this:~~
 
-Instead query use Authorization header
+Instead of `query` use `Authorization` header
 ```php
 $client = ClientFactory::factory([
-'headers' => [
+    'headers' => [
         'Authorization' => "Discogs key=key_here, secret=secret_here",
     ],
 ]);
