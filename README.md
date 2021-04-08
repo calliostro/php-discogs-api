@@ -310,7 +310,23 @@ $items = $service->getCollectionItemsByFolder([
 ]);
 ```
 
-#### Change Listing, authenticated as the seller
+### Listings
+
+Creating and manipulating listings requires you to be authenticated as the seller
+
+#### Create a Listing
+```php
+<?php
+
+$response = $client->createListing([
+    'release_id' => '1',
+    'condition' => 'Good (G)',
+    'price' => 3.49,
+    'status' => 'For Sale'
+]);
+```
+
+#### Change Listing
 
 ```php
 <?php
@@ -321,7 +337,35 @@ $response = $client->changeListing([
     'price' => 3.49,
 ]);
 ```
+#### Delete a Listing
+```php
+<?php
 
+$response = $client->deleteListing(['listing_id' => '123']);
+```
+
+#### Create Listings in bulk (via CSV)
+```php
+<?php
+$response = $client->addInventory(['upload' => fopen('path/to/file.csv', 'r')]);
+
+// CSV format (example): 
+// release_id,condition,price
+// 1,Mint (M),19.99
+// 2,Near Mint (NM or M-),14.99
+```
+
+#### Delete Listings in bulk (via CSV)
+```php
+<?php
+$response = $client->deleteInventory(['upload' => fopen('path/to/file.csv', 'r')]);
+
+// CSV format (example): 
+// listing_id
+// 123
+// 213
+// 321
+```
 ## Documentation
 Further documentation can be found at the [Discogs API v2.0 Documentation](http://www.discogs.com/developers/index.html).
 
