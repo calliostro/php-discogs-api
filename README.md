@@ -29,6 +29,7 @@ Creating a new instance is as simple as:
 
 ```php
 <?php
+
 $client = Discogs\ClientFactory::factory([]);
 ```
 
@@ -37,19 +38,10 @@ Discogs requires that you supply a User-Agent. You can do this easily:
 
 ```php
 <?php
-$client = Discogs\ClientFactory::factory([
-    'defaults' => [
-        'headers' => ['User-Agent' => 'your-app-name/0.1 +https://www.awesomesite.com'],
-    ]
-]);
 
-// New Version
-<?php
 $client = Discogs\ClientFactory::factory([    
     'headers' => ['User-Agent' => 'your-app-name/0.1 +https://www.awesomesite.com'],
 ]);
-
-
 ```
 
 ### Throttling
@@ -57,12 +49,6 @@ Discogs doesn't like it when you hit their API at a too high connection rate. Us
 prevent getting errors or banned:
 
 ```php
-<?php
-
-$client = Discogs\ClientFactory::factory();
-$client->getHttpClient()->getEmitter()->attach(new Discogs\Subscriber\ThrottleSubscriber());
-
-// New Version
 <?php
 
 $handler = \GuzzleHttp\HandlerStack::create();
@@ -95,7 +81,6 @@ $client = ClientFactory::factory([
 ```
 
 
-
 Authenticate with Personal access token, you can get it from https://www.discogs.com/settings/developers
 ```php
 $client = ClientFactory::factory([
@@ -111,22 +96,6 @@ $client = ClientFactory::factory([
 There are a lot of endpoints which require OAuth. Lucky for you using Guzzle this is peanuts. If you're having trouble obtaining the token and token_secret, please check out my [example implementation](https://github.com/ricbra/php-discogs-api-example).
 
 ```php
-<?php
-
-$client = Discogs\ClientFactory::factory([]);
-$oauth = new GuzzleHttp\Subscriber\Oauth\Oauth1([
-    'consumer_key'    => $consumerKey, // from Discogs developer page
-    'consumer_secret' => $consumerSecret, // from Discogs developer page
-    'token'           => $token['oauth_token'], // get this using a OAuth library
-    'token_secret'    => $token['oauth_token_secret'] // get this using a OAuth library
-]);
-$client->getHttpClient()->getEmitter()->attach($oauth);
-
-$response = $client->search([
-    'q' => 'searchstring'
-]);
-
-// New Version
 <?php
 
 $oauth = new GuzzleHttp\Subscriber\Oauth\Oauth1([
@@ -149,20 +118,6 @@ Another cool plugin is the History plugin:
 ```php
 <?php
 
-$client = Discogs\ClientFactory::factory([]);
-$history = new GuzzleHttp\Subscriber\History();
-$client->getHttpClient()->getEmitter()->attach($history);
-
-$response = $client->search([
-    'q' => 'searchstring'
-]);
-
-foreach ($history as $row) {
-    print (string) $row['request'];
-    print (string) $row['response'];
-}
-
-// New Version
 $container = [];
 $history = GuzzleHttp\Middleware::History($container);
 $handler = GuzzleHttp\HandlerStack::create();
