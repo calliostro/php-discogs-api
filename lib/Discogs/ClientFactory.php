@@ -12,7 +12,6 @@ namespace Discogs;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Command\Guzzle\Description;
-use GuzzleHttp\Command\Guzzle\GuzzleClient;
 
 class ClientFactory
 {
@@ -27,7 +26,7 @@ class ClientFactory
         $service = include __DIR__ . '/../../resources/service.php';
         $description = new Description($service);
 
-        return new GuzzleClient($client, $description);
+        return new DiscogsClient($client, $description);
     }
 
     public static function &mergeRecursive(array &$array1, &$array2 = null)
