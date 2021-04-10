@@ -11,7 +11,7 @@
 namespace Discogs\Test;
 
 use Discogs\ClientFactory;
-use GuzzleHttp\Command\Guzzle\GuzzleClient;
+use GuzzleHttp\Command\Exception\CommandException;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -267,7 +267,7 @@ class ClientTest extends TestCase
         $container = [];
         $history = Middleware::History($container);
         $client = $this->createClient('change_order', $history);
-        $response = $client->changeOrder([
+        $client->changeOrder([
             'order_id'  => '1-1',
             'shipping'  => 5.0
         ]);
@@ -280,7 +280,7 @@ class ClientTest extends TestCase
     {
         $container = [];
         $history = Middleware::History($container);
-        $this->expectException('GuzzleHttp\Command\Exception\CommandException', 'Validation errors: [status] is a required string');
+        $this->expectException(CommandException::class);
         $client = $this->createClient('create_listing', $history);
         $client->createListing([
             'release_id' => '1',
@@ -294,7 +294,7 @@ class ClientTest extends TestCase
         $container = [];
         $history = Middleware::History($container);
         $client = $this->createClient('create_listing', $history);
-        $response = $client->createListing([
+        $client->createListing([
             'release_id' => '1',
             'condition' => 'Mint (M)',
             'status' => 'For Sale',
@@ -310,7 +310,7 @@ class ClientTest extends TestCase
         $container = [];
         $history = Middleware::History($container);
         $client = $this->createClient('change_listing', $history);
-        $response = $client->changeListing([
+        $client->changeListing([
             'listing_id' => '123',
             'condition' => 'Mint (M)',
             'price' => 4.90
@@ -325,7 +325,7 @@ class ClientTest extends TestCase
         $container = [];
         $history = Middleware::History($container);
         $client = $this->createClient('delete_listing', $history);
-        $response = $client->deleteListing([
+        $client->deleteListing([
             'listing_id' => '129242581'
         ]);
 

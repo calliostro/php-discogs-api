@@ -1,5 +1,5 @@
 {
-    "name": "ricbra/php-discogs-api",
+    "name": "calliostro/php-discogs-api",
     "description": "The Discogs API makes it easy for developers to communicate with the Discogs platform",
     "type": "library",
     "keywords": ["discogs", "api"],
@@ -11,12 +11,17 @@
         "guzzlehttp/oauth-subscriber": "~0.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "~9.5"
+        "phpunit/phpunit": "~9.5",
+        "ext-json": "*"
     },
     "authors": [
         {
             "name": "Richard van den Brand",
             "email": "richard@vandenbrand.org"
+        },
+        {
+            "name": "calliostro",
+            "email": "calliostro@gmail.com"
         }
     ],
     "autoload": {
@@ -24,7 +29,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     },
     "suggest": {

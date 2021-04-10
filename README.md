@@ -1,25 +1,28 @@
 ## Discogs Api
 
-[![Build Status](https://secure.travis-ci.org/ricbra/php-discogs-api.png)](http://travis-ci.org/ricbra/php-discogs-api)
-[![Latest Stable Version](https://poser.pugx.org/ricbra/php-discogs-api/v/stable.svg)](https://packagist.org/packages/ricbra/php-discogs-api)
-[![Total Downloads](https://poser.pugx.org/ricbra/php-discogs-api/downloads.png)](https://packagist.org/packages/ricbra/php-discogs-api)
-[![License](https://poser.pugx.org/ricbra/php-discogs-api/license.png)](https://packagist.org/packages/ricbra/php-discogs-api)
-[![Quality](https://scrutinizer-ci.com/g/ricbra/php-discogs-api/badges/quality-score.png)](https://scrutinizer-ci.com/g/ricbra/php-discogs-api/)
+[![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.png)](http://travis-ci.com/calliostro/php-discogs-api)
+[![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](//packagist.org/packages/calliostro/php-discogs-api)
+[![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](//packagist.org/packages/calliostro/php-discogs-api)
 
-This library is a PHP 7.3 implementation of the [Discogs API v2.0.](http://www.discogs.com/developers/index.html)
+This library is a PHP 7.3 implementation of the [Discogs API v2.0.](https://www.discogs.com/developers/index.html)
 The Discogs API is a REST-based interface. By using this library you don't have to worry about communicating with the
 API: all the hard work has already be done.
 
-This API is build upon the shoulders of a giant: [Guzzle 7.0](http://guzzle.readthedocs.org/en/latest/). This is an absolutely awesome library.
+This API is build upon the shoulders of a giant: [Guzzle 7.0](https://docs.guzzlephp.org/en/latest/). This is an absolutely awesome library.
+
+For the integration of Discogs into Symfony2, see [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api), which this is based on.
+
+Thanks also to [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api) for porting to PHP 7 and adding more Discos API methods.
+
 
 ## License
 This library is released under the MIT license. See the complete license in the LICENSE file.
 
 ## Installation
-Start by [installing composer](http://getcomposer.org/doc/01-basic-usage.md#installation).
+Start by [installing composer](https://getcomposer.org/doc/01-basic-usage.md#installation).
 Next do:
 
-    $ composer require ricbra/php-discogs-api
+    $ composer require calliostro/php-discogs-api
 
 ## Requirements
 PHP >=7.3.0
@@ -140,7 +143,7 @@ foreach ($container as $row) {
 ```
 
 ### More info and plugins
-For more information about Guzzle and its plugins checkout [the docs.](http://guzzle.readthedocs.org/en/latest/)
+For more information about Guzzle and its plugins checkout [the docs.](https://docs.guzzlephp.org/en/latest/)
 
 ### Perform a search:
 Per august 2014 a signed OAuth request is required for this endpoint.
@@ -322,11 +325,7 @@ $response = $client->deleteInventory(['upload' => fopen('path/to/file.csv', 'r')
 // 321
 ```
 ## Documentation
-Further documentation can be found at the [Discogs API v2.0 Documentation](http://www.discogs.com/developers/index.html).
+Further documentation can be found at the [Discogs API v2.0 Documentation](https://www.discogs.com/developers/index.html).
 
 ## Contributing
 Implemented a missing call? PR's are welcome! 
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/ricbra/php-discogs-api/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
