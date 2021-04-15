@@ -9,8 +9,9 @@
 namespace Discogs\Test;
 
 use Discogs\ClientFactory;
+use PHPUnit\Framework\TestCase;
 
-final class ClientFactoryTest extends \PHPUnit\Framework\TestCase
+final class ClientFactoryTest extends TestCase
 {
     public function testFactory()
     {

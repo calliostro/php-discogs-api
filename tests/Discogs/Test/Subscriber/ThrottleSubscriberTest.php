@@ -9,14 +9,16 @@
 namespace Discogs\Test\Subscriber;
 
 use Discogs\Subscriber\ThrottleSubscriber;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\TestCase;
 
-final class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
+final class ThrottleSubscriberTest extends TestCase
 {
 
     public function testInstantiation(): void
@@ -86,7 +88,7 @@ final class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
         $client = new Client(['handler' => $handler]);
         try {
             $client->request('GET', '/');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertInstanceOf(ClientException::class, $e);
             $this->assertEquals($e->getCode(), 429);
         }
