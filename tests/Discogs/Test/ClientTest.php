@@ -11,6 +11,7 @@
 namespace Discogs\Test;
 
 use Discogs\ClientFactory;
+use Discogs\DiscogsClient;
 use GuzzleHttp\Command\Exception\CommandException;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Handler\MockHandler;
@@ -20,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ClientTest extends TestCase
 {
-    public function testGetArtist()
+    public function testGetArtist(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -38,7 +39,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetArtistReleases()
+    public function testGetArtistReleases(): void
     {
 
         $container = [];
@@ -58,7 +59,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testSearch()
+    public function testSearch(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -78,7 +79,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetRelease()
+    public function testGetRelease(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -96,7 +97,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetMaster()
+    public function testGetMaster(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -112,7 +113,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetMasterVersions()
+    public function testGetMasterVersions(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -130,7 +131,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetLabel()
+    public function testGetLabel(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -146,7 +147,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetLabelReleases()
+    public function testGetLabelReleases(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -164,7 +165,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetOAuthIdentity()
+    public function testGetOAuthIdentity(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -177,7 +178,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetProfile()
+    public function testGetProfile(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -197,7 +198,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/users/maxperei', strval($container[0]['request']->getUri()));
     }
 
-    public function testGetInventory()
+    public function testGetInventory(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -215,7 +216,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/users/360vinyl/inventory?sort=price&sort_order=asc', strval($container[0]['request']->getUri()));
     }
 
-    public function testGetOrders()
+    public function testGetOrders(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -233,7 +234,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/orders?status=New%20Order&sort=price&sort_order=asc', strval($container[0]['request']->getUri()));
     }
 
-    public function testGetOrder()
+    public function testGetOrder(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -262,7 +263,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/orders/1-1', strval($container[0]['request']->getUri()));
     }
 
-    public function testChangeOrder()
+    public function testChangeOrder(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -276,7 +277,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/orders/1-1', strval($container[0]['request']->getUri()));
     }
 
-    public function testCreateListingValidation()
+    public function testCreateListingValidation(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -289,7 +290,7 @@ final class ClientTest extends TestCase
         ]);
     }
 
-    public function testCreateListing()
+    public function testCreateListing(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -305,7 +306,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/listings', strval($container[0]['request']->getUri()));
     }
 
-    public function testChangeListing()
+    public function testChangeListing(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -320,7 +321,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/listings/123', strval($container[0]['request']->getUri()));
     }
 
-    public function testDeleteListing()
+    public function testDeleteListing(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -333,7 +334,7 @@ final class ClientTest extends TestCase
         $this->assertSame('https://api.discogs.com/marketplace/listings/129242581', strval($container[0]['request']->getUri()));
     }
 
-    public function testGetCollectionFolders()
+    public function testGetCollectionFolders(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -349,7 +350,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetCollectionFolder()
+    public function testGetCollectionFolder(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -368,7 +369,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    public function testGetCollectionItemsByFolder()
+    public function testGetCollectionItemsByFolder(): void
     {
         $container = [];
         $history = Middleware::History($container);
@@ -393,7 +394,7 @@ final class ClientTest extends TestCase
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
-    protected function createClient($mock, $history)
+    protected function createClient(string $mock, callable $history): DiscogsClient
     {
         $json = file_get_contents(__DIR__ . "/../../fixtures/$mock.json");
         $data = json_decode($json, true);

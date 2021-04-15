@@ -15,7 +15,7 @@ use GuzzleHttp\Command\Guzzle\Description;
 
 final class ClientFactory
 {
-    public static function factory(array $config = [])
+    public static function factory(array $config = []): DiscogsClient
     {
         $defaultConfig = [
             'headers' => ['User-Agent' => 'php-discogs-api/1.0.0 +https://github.com/ricbra/php-discogs-api'],
@@ -29,7 +29,7 @@ final class ClientFactory
         return new DiscogsClient($client, $description);
     }
 
-    public static function &mergeRecursive(array &$array1, &$array2 = null)
+    public static function &mergeRecursive(array &$array1, &$array2 = null): array
     {
         $merged = $array1;
 

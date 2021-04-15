@@ -27,7 +27,7 @@ final class ThrottleSubscriberTest extends TestCase
         $this->assertInstanceOf(ThrottleSubscriber::class, $throttle);
     }
 
-    public function testWithThrottle()
+    public function testWithThrottle(): void
     {
         $throttle = 2000; // milliseconds == 2 sec
         $subscriber = new ThrottleSubscriber($throttle);
@@ -49,7 +49,7 @@ final class ThrottleSubscriberTest extends TestCase
         $this->assertTrue($difference > 4);
     }
 
-    public function testWithoutThrottle()
+    public function testWithoutThrottle(): void
     {
         $throttle = 0;
         $subscriber = new ThrottleSubscriber($throttle);
@@ -71,7 +71,7 @@ final class ThrottleSubscriberTest extends TestCase
         $this->assertTrue($difference < 0.5);
     }
 
-    public function testMaxRetries()
+    public function testMaxRetries(): void
     {
         $throttle = 500;
         $max_retries = 2;

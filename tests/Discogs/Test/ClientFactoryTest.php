@@ -13,14 +13,14 @@ use PHPUnit\Framework\TestCase;
 
 final class ClientFactoryTest extends TestCase
 {
-    public function testFactory()
+    public function testFactory(): void
     {
         $client = ClientFactory::factory();
         $default = ['User-Agent' => 'php-discogs-api/1.0.0 +https://github.com/ricbra/php-discogs-api'];
         $this->assertSame($default, $client->getHttpClient()->getConfig('headers'));
     }
 
-    public function testFactoryWithCustomUserAgent()
+    public function testFactoryWithCustomUserAgent(): void
     {
         $client = ClientFactory::factory([
             'headers' => ['User-Agent' => 'test']
@@ -31,7 +31,7 @@ final class ClientFactoryTest extends TestCase
     }
 
 
-    public function testFactoryWithCustomDefaultNotInClassDefaults()
+    public function testFactoryWithCustomDefaultNotInClassDefaults(): void
     {
         $client = ClientFactory::factory([
             'headers' => ['User-Agent' => 'test'],

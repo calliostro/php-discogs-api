@@ -15,16 +15,16 @@ final class ThrottleSubscriber
     /**
      * @param int $throttle wait time between retries, in milliseconds
      */
-    public function __construct($throttle = 1000, $max_retries = 5)
+    public function __construct(int $throttle = 1000, int $max_retries = 5)
     {
-        $this->throttle = (int) $throttle;
-        $this->max_retries = (int) $max_retries;
+        $this->throttle = $throttle;
+        $this->max_retries = $max_retries;
     }
 
-    public function decider()
+    public function decider(): callable
     {
         return function (
-            $retries,
+            int $retries,
             Request $request,
             Response $response = null,
             RequestException $exception = null
@@ -44,9 +44,9 @@ final class ThrottleSubscriber
         };
     }
 
-    public function delay()
+    public function delay(): callable
     {
-        return function ($retries) {
+        return function (int $retries) {
             return $this->throttle * (2 ** $retries);
         };
     }
