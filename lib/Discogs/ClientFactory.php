@@ -18,7 +18,7 @@ final class ClientFactory
     public static function factory(array $config = []): DiscogsClient
     {
         $defaultConfig = [
-            'headers' => ['User-Agent' => 'php-discogs-api/1.0.0 +https://github.com/ricbra/php-discogs-api'],
+            'headers' => ['User-Agent' => 'php-discogs-api/2.0.0 +https://github.com/calliostro/php-discogs-api'],
             'auth' => 'oauth',
         ];
 

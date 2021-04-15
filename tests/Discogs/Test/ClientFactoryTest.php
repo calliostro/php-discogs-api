@@ -16,7 +16,7 @@ final class ClientFactoryTest extends TestCase
     public function testFactory(): void
     {
         $client = ClientFactory::factory();
-        $default = ['User-Agent' => 'php-discogs-api/1.0.0 +https://github.com/ricbra/php-discogs-api'];
+        $default = ['User-Agent' => 'php-discogs-api/2.0.0 +https://github.com/calliostro/php-discogs-api'];
         $this->assertSame($default, $client->getHttpClient()->getConfig('headers'));
     }
 
