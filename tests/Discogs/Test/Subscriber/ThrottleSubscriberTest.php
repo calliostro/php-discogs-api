@@ -16,7 +16,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 
-class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
+final class ThrottleSubscriberTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testInstantiation(): void

@@ -10,7 +10,7 @@ namespace Discogs\Test;
 
 use Discogs\ClientFactory;
 
-class ClientFactoryTest extends \PHPUnit\Framework\TestCase
+final class ClientFactoryTest extends \PHPUnit\Framework\TestCase
 {
     public function testFactory()
     {

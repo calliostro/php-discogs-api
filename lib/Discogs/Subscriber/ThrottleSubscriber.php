@@ -7,7 +7,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
-class ThrottleSubscriber
+final class ThrottleSubscriber
 {
     private $throttle;
     private $max_retries;

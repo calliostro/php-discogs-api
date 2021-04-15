@@ -13,7 +13,7 @@ namespace Discogs;
 use GuzzleHttp\Client;
 use GuzzleHttp\Command\Guzzle\Description;
 
-class ClientFactory
+final class ClientFactory
 {
     public static function factory(array $config = [])
     {

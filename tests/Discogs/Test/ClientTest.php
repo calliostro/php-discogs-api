@@ -18,7 +18,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
-class ClientTest extends TestCase
+final class ClientTest extends TestCase
 {
     public function testGetArtist()
     {
