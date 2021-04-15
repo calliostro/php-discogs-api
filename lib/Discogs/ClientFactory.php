@@ -29,7 +29,7 @@ final class ClientFactory
         return new DiscogsClient($client, $description);
     }
 
-    public static function &mergeRecursive(array &$array1, &$array2 = null): array
+    private static function &mergeRecursive(array &$array1, &$array2 = null): array
     {
         $merged = $array1;
 
