@@ -35,9 +35,9 @@ final class ClientFactory
 
         if (is_array($array2)) {
             foreach ($array2 as $key => $val) {
-                if (is_array($array2[$key])) {
+                if (is_array($val)) {
                     $merged[$key] = isset($merged[$key]) && is_array($merged[$key]) ?
-                        self::mergeRecursive($merged[$key], $array2[$key]) : $array2[$key];
+                        self::mergeRecursive($merged[$key], $array2[$key]) : $val;
                 } else {
                     $merged[$key] = $val;
                 }
