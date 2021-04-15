@@ -55,7 +55,10 @@ final class ClientTest extends TestCase
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('per_page', $response['pagination']);
 
-        $this->assertSame('https://api.discogs.com/artists/45/releases?per_page=50&page=1', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/artists/45/releases?per_page=50&page=1',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -75,7 +78,10 @@ final class ClientTest extends TestCase
         $this->assertCount(50, $response['results']);
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('per_page', $response['pagination']);
-        $this->assertSame('https://api.discogs.com/database/search?q=prodigy&type=release&title=the%20fat%20of%20the%20land&per_page=100&page=3', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/database/search?q=prodigy&type=release&title=the%20fat%20of%20the%20land&per_page=100&page=3',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -93,7 +99,10 @@ final class ClientTest extends TestCase
         $this->assertSame('Accepted', $response['status']);
         $this->assertArrayHasKey('videos', $response);
         $this->assertCount(6, $response['videos']);
-        $this->assertSame('https://api.discogs.com/releases/1?curr_abbr=USD', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/releases/1?curr_abbr=USD',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -127,7 +136,10 @@ final class ClientTest extends TestCase
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('versions', $response);
         $this->assertCount(4, $response['versions']);
-        $this->assertSame('https://api.discogs.com/masters/33687/versions?per_page=4&page=2', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/masters/33687/versions?per_page=4&page=2',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -161,7 +173,10 @@ final class ClientTest extends TestCase
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('releases', $response);
         $this->assertCount(2, $response['releases']);
-        $this->assertSame('https://api.discogs.com/labels/1/releases?per_page=2&page=1', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/labels/1/releases?per_page=2&page=1',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -193,7 +208,10 @@ final class ClientTest extends TestCase
         $this->assertArrayHasKey('home_page', $response);
         $this->assertArrayNotHasKey('email', $response);
         $this->assertSame($response['name'], '∴');
-        $this->assertSame($response['avatar_url'], 'https://img.discogs.com/mDaw_OUjHspYLj77C_tcobr2eXc=/500x500/filters:strip_icc():format(jpeg):quality(40)/discogs-avatars/U-1861520-1498224434.jpeg.jpg');
+        $this->assertSame(
+            $response['avatar_url'],
+            'https://img.discogs.com/mDaw_OUjHspYLj77C_tcobr2eXc=/500x500/filters:strip_icc():format(jpeg):quality(40)/discogs-avatars/U-1861520-1498224434.jpeg.jpg'
+        );
         $this->assertSame($response['home_page'], 'http://maxperei.info');
         $this->assertSame('https://api.discogs.com/users/maxperei', strval($container[0]['request']->getUri()));
     }
@@ -204,16 +222,19 @@ final class ClientTest extends TestCase
         $history = Middleware::History($container);
         $client = $this->createClient('get_inventory', $history);
         $response = $client->getInventory([
-            'username'      => '360vinyl',
-            'sort'          => 'price',
-            'sort_order'    => 'asc'
+            'username' => '360vinyl',
+            'sort' => 'price',
+            'sort_order' => 'asc'
         ]);
 
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('listings', $response);
         $this->assertCount(50, $response['listings']);
         $this->assertSame('GET', $container[0]['request']->getMethod());
-        $this->assertSame('https://api.discogs.com/users/360vinyl/inventory?sort=price&sort_order=asc', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/users/360vinyl/inventory?sort=price&sort_order=asc',
+            strval($container[0]['request']->getUri())
+        );
     }
 
     public function testGetOrders(): void
@@ -222,16 +243,19 @@ final class ClientTest extends TestCase
         $history = Middleware::History($container);
         $client = $this->createClient('get_orders', $history);
         $response = $client->getOrders([
-            'status'      => 'New Order',
-            'sort'        => 'price',
-            'sort_order'  => 'asc'
+            'status' => 'New Order',
+            'sort' => 'price',
+            'sort_order' => 'asc'
         ]);
 
         $this->assertArrayHasKey('pagination', $response);
         $this->assertArrayHasKey('orders', $response);
         $this->assertCount(1, $response['orders']);
         $this->assertSame('GET', $container[0]['request']->getMethod());
-        $this->assertSame('https://api.discogs.com/marketplace/orders?status=New%20Order&sort=price&sort_order=asc', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/marketplace/orders?status=New%20Order&sort=price&sort_order=asc',
+            strval($container[0]['request']->getUri())
+        );
     }
 
     public function testGetOrder(): void
@@ -269,8 +293,8 @@ final class ClientTest extends TestCase
         $history = Middleware::History($container);
         $client = $this->createClient('change_order', $history);
         $client->changeOrder([
-            'order_id'  => '1-1',
-            'shipping'  => 5.0
+            'order_id' => '1-1',
+            'shipping' => 5.0
         ]);
 
         $this->assertSame('POST', $container[0]['request']->getMethod());
@@ -318,7 +342,10 @@ final class ClientTest extends TestCase
         ]);
 
         $this->assertSame('POST', $container[0]['request']->getMethod());
-        $this->assertSame('https://api.discogs.com/marketplace/listings/123', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/marketplace/listings/123',
+            strval($container[0]['request']->getUri())
+        );
     }
 
     public function testDeleteListing(): void
@@ -331,7 +358,10 @@ final class ClientTest extends TestCase
         ]);
 
         $this->assertSame('DELETE', $container[0]['request']->getMethod());
-        $this->assertSame('https://api.discogs.com/marketplace/listings/129242581', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/marketplace/listings/129242581',
+            strval($container[0]['request']->getUri())
+        );
     }
 
     public function testGetCollectionFolders(): void
@@ -346,7 +376,10 @@ final class ClientTest extends TestCase
         $this->assertIsArray($response['folders']);
         $this->assertCount(2, $response['folders']);
 
-        $this->assertSame('https://api.discogs.com/users/example/collection/folders', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/users/example/collection/folders',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 
@@ -365,7 +398,10 @@ final class ClientTest extends TestCase
         $this->assertSame($response['name'], 'Uncategorized');
         $this->assertSame($response['resource_url'], "https://api.discogs.com/users/example/collection/folders/1");
 
-        $this->assertSame('https://api.discogs.com/users/example/collection/folders/1', strval($container[0]['request']->getUri()));
+        $this->assertSame(
+            'https://api.discogs.com/users/example/collection/folders/1',
+            strval($container[0]['request']->getUri())
+        );
         $this->assertSame('GET', $container[0]['request']->getMethod());
     }
 

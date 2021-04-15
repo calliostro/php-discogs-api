@@ -29,15 +29,23 @@ final class ThrottleSubscriber
             Response $response = null,
             RequestException $exception = null
         ) {
-            if ($retries >= $this->max_retries) return false;
+            if ($retries >= $this->max_retries) {
+                return false;
+            }
 
             // Retry on connection exceptions
-            if ($exception instanceof ConnectException) return true;
+            if ($exception instanceof ConnectException) {
+                return true;
+            }
 
             if ($response) {
-                if ($response->getStatusCode() == 429) return true;
+                if ($response->getStatusCode() == 429) {
+                    return true;
+                }
                 // Retry on server errors
-                if ($response->getStatusCode() >= 500) return true;
+                if ($response->getStatusCode() >= 500) {
+                    return true;
+                }
             }
 
             return false;
