@@ -33,7 +33,8 @@
         }
     },
     "suggest": {
-        "ricbra/discogs-bundle": "For integrating Discogs into Symfony2"
+        "calliostro/discogs-bundle": "For integrating Discogs into Symfony 5",
+        "ricbra/discogs-bundle": "For integrating Discogs into Symfony 2"
     },
     "scripts":{
         "test": "phpunit tests"

@@ -1,4 +1,5 @@
-## Discogs Api
+Discogs Api
+===========
 
 [![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.png)](http://travis-ci.com/calliostro/php-discogs-api)
 [![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](//packagist.org/packages/calliostro/php-discogs-api)
@@ -8,26 +9,35 @@ This library is a PHP 7.3 implementation of the [Discogs API v2.0.](https://www.
 The Discogs API is a REST-based interface. By using this library you don't have to worry about communicating with the
 API: all the hard work has already be done.
 
-This API is build upon the shoulders of a giant: [Guzzle 7.0](https://docs.guzzlephp.org/en/latest/). This is an absolutely awesome library.
 
-For the integration of Discogs into Symfony2, see [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api), which this is based on.
+License
+-------
 
-Thanks also to [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api) for porting to PHP 7 and adding more Discos API methods.
-
-
-## License
 This library is released under the MIT license. See the complete license in the LICENSE file.
 
-## Installation
+
+Symfony Bundle
+--------------
+
+For the integration of Discogs into Symfony 5, see [calliostro/discogs-bundle](https://github.com/calliostro/discogs-bundle).
+
+
+Installation
+------------
+
 Start by [installing composer](https://getcomposer.org/doc/01-basic-usage.md#installation).
 Next do:
 
     $ composer require calliostro/php-discogs-api
 
-## Requirements
+Requirements
+------------
+
 PHP >=7.3.0
 
-## Usage
+Usage
+-----
+
 Creating a new instance is as simple as:
 
 ```php
@@ -72,9 +82,8 @@ As stated in the Discogs Authentication documentation:
 > - To easily access your own user account information, use a *User token*.
 > - To get access to an endpoint that requires authentication and build 3rd party apps, use a *Consumer Key and Secret*.
 
-~~With the Discogs Php API you can add your credentials to each request by adding a `query` key to your own defaults like this:~~
+Use `Authorization` header:
 
-Instead of `query` use `Authorization` header
 ```php
 $client = ClientFactory::factory([
     'headers' => [
@@ -84,7 +93,8 @@ $client = ClientFactory::factory([
 ```
 
 
-Authenticate with Personal access token, you can get it from https://www.discogs.com/settings/developers
+Authenticate with personal access token (you can get it from https://www.discogs.com/settings/developers):
+
 ```php
 $client = ClientFactory::factory([
     'headers' => [
@@ -96,7 +106,9 @@ $client = ClientFactory::factory([
 
 
 ### OAuth
-There are a lot of endpoints which require OAuth. Lucky for you using Guzzle this is peanuts. If you're having trouble obtaining the token and token_secret, please check out my [example implementation](https://github.com/ricbra/php-discogs-api-example).
+There are a lot of endpoints which require OAuth. Lucky for you using Guzzle this is peanuts. If you're having trouble 
+obtaining the token and token_secret, please check out 
+[ricbra/php-discogs-api-example](https://github.com/ricbra/php-discogs-api-example).
 
 ```php
 <?php
@@ -171,7 +183,7 @@ var_dump($response->toArray());
 ```php
 <?php
 
-$label = $service->getLabel([
+$label = $client->getLabel([
     'id' => 1
 ]);
 
@@ -182,7 +194,7 @@ $label = $service->getLabel([
 ```php
 <?php
 
-$artist = $service->getArtist([
+$artist = $client->getArtist([
     'id' => 1
 ]);
 
@@ -193,7 +205,7 @@ $artist = $service->getArtist([
 ```php
 <?php
 
-$release = $service->getRelease([
+$release = $client->getRelease([
     'id' => 1
 ]);
 
@@ -205,7 +217,7 @@ echo $release['title']."\n";
 ```php
 <?php
 
-$master  = $service->getMaster([
+$master  = $client->getMaster([
     'id' => 1
 ]);
 
@@ -240,7 +252,7 @@ Authorization is required when `folder_id` is not `0`.
 ```php
 <?php
 
-$folders = $service->getCollectionFolders([
+$folders = $client->getCollectionFolders([
     'username' => 'example'
 ]);
 ```
@@ -251,7 +263,7 @@ $folders = $service->getCollectionFolders([
 ```php
 <?php
 
-$folder = $service->getCollectionFolder([
+$folder = $client->getCollectionFolder([
     'username' => 'example',
     'folder_id' => 1
 ]);
@@ -262,7 +274,7 @@ $folder = $service->getCollectionFolder([
 ```php
 <?php
 
-$items = $service->getCollectionItemsByFolder([
+$items = $client->getCollectionItemsByFolder([
     'username' => 'example',
     'folder_id' => 3
 ]);
@@ -324,8 +336,23 @@ $response = $client->deleteInventory(['upload' => fopen('path/to/file.csv', 'r')
 // 213
 // 321
 ```
-## Documentation
+
+Documentation
+-------------
 Further documentation can be found at the [Discogs API v2.0 Documentation](https://www.discogs.com/developers/index.html).
 
-## Contributing
-Implemented a missing call? PR's are welcome! 
+
+Contributing
+------------
+
+Implemented a missing feature? You can request it. And creating a pull request is an even better way to get things done.
+
+
+Thanks to
+---------
+
+Initial development by [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api).
+
+Porting to PHP 7 and adding more Discos API methods by [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api).
+
+This API is build upon the shoulders of [Guzzle 7](https://docs.guzzlephp.org/en/latest/).
