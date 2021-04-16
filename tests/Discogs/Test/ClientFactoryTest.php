@@ -23,13 +23,11 @@ final class ClientFactoryTest extends TestCase
     public function testFactoryWithCustomUserAgent(): void
     {
         $client = ClientFactory::factory([
-            'headers' => ['User-Agent' => 'test']
-
+            'headers' => ['User-Agent' => 'test'],
         ]);
         $default = ['User-Agent' => 'test'];
         $this->assertSame($default, $client->getHttpClient()->getConfig('headers'));
     }
-
 
     public function testFactoryWithCustomDefaultNotInClassDefaults(): void
     {
@@ -39,12 +37,11 @@ final class ClientFactoryTest extends TestCase
                 'key' => 'my-key',
                 'secret' => 'my-secret',
             ],
-
         ]);
         $default_headers = ['User-Agent' => 'test'];
         $default_query = [
             'key' => 'my-key',
-            'secret' => 'my-secret'
+            'secret' => 'my-secret',
         ];
         $this->assertSame($default_headers, $client->getHttpClient()->getConfig('headers'));
         $this->assertSame($default_query, $client->getHttpClient()->getConfig('query'));
