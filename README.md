@@ -19,7 +19,7 @@ This library is released under the MIT license. See the complete license in the 
 Symfony Bundle
 --------------
 
-For the integration of Discogs into Symfony 5, see [calliostro/discogs-bundle](https://github.com/calliostro/discogs-bundle).
+For the integration of Discogs into Symfony 5 or Symfony 6, see [calliostro/discogs-bundle](https://github.com/calliostro/discogs-bundle).
 
 
 Installation
