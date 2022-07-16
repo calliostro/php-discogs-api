@@ -14,6 +14,8 @@ matrix:
   fast_finish: true
   include:
     # Minimum supported dependencies with the latest and oldest PHP version
+    - php: 8.1
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
     - php: 8.0
       env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
     - php: 7.4
@@ -26,9 +28,11 @@ matrix:
     - php: 7.4
     - php: 8.0
       env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
+    - php: 8.1
+      env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
 
       # Latest commit to master
-    - php: 8.0
+    - php: 8.1
       env: STABILITY="dev"
 
   allow_failures:

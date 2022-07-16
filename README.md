@@ -1,11 +1,11 @@
 Discogs Api
 ===========
 
-[![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.png)](http://travis-ci.com/calliostro/php-discogs-api)
+[![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.png)](https://app.travis-ci.com/github/calliostro/php-discogs-api)
 [![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](//packagist.org/packages/calliostro/php-discogs-api)
 [![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](//packagist.org/packages/calliostro/php-discogs-api)
 
-This library is a PHP 7.3 implementation of the [Discogs API v2.0.](https://www.discogs.com/developers/index.html)
+This library is a PHP 7.3 / PHP 8.x implementation of the [Discogs API v2.0.](https://www.discogs.com/developers/index.html)
 The Discogs API is a REST-based interface. By using this library you don't have to worry about communicating with the
 API: all the hard work has already be done.
 
@@ -33,7 +33,7 @@ Next do:
 Requirements
 ------------
 
-PHP >=7.3.0
+PHP 7.3 or PHP 8.x
 
 Usage
 -----
