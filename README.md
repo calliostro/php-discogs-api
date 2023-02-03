@@ -243,6 +243,18 @@ foreach ($release['images'] as $image) {
 
 ```
 
+### User Wantlist
+
+```php
+<?php
+
+$folders = $client->getWantlist([
+    'username' => 'example',
+    'page' => 1, #default
+    'per_page' => 500 #min 1, max 500, default 50
+]);
+```
+
 ### User Collection
 
 Authorization is required when `folder_id` is not `0`.
