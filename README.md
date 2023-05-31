@@ -243,6 +243,23 @@ foreach ($release['images'] as $image) {
 
 ```
 
+### Get user lists
+
+```php
+$release = $client->getUserLists([
+    'username' => 'example'
+]);
+```
+
+
+### Get lists
+
+```php
+$release = $client->getLists([
+    'list_id' => 1
+]);
+```
+
 ### User Collection
 
 Authorization is required when `folder_id` is not `0`.
