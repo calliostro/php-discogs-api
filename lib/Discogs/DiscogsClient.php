@@ -38,6 +38,7 @@ use GuzzleHttp\Command\Result;
  * @method Result getCollectionItemsByFolder(array $parameters) <a href="https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-items-by-folder-get">See Discogs API Documentation</a>
  * @method Result getUserLists(array $parameters) <a href="https://www.discogs.com/developers/index.html#page:user-lists,header:user-lists-user-lists">See Discogs API Documentation</a>
  * @method Result getLists(array $parameters) <a href="https://www.discogs.com/developers/index.html#page:user-lists,header:user-lists-list">See Discogs API Documentation</a>
+ * @method Result getWantlist(array $parameters) <a href="https://www.discogs.com/developers/#page:user-wantlist,header:user-wantlist-wantlist">See Discogs API Documentation</a>
  */
 class DiscogsClient extends GuzzleClient
 {

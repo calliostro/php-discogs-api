@@ -585,6 +585,28 @@ return [
                 ]
             ]
         ],
+        'getWantlist' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/wants',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'username' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ],
+                'per_page' => [
+                    'type' => 'integer',
+                    'location' => 'query',
+                    'required' => false
+                ],
+                'page' => [
+                    'type' => 'string',
+                    'location' => 'query',
+                    'required' => false
+                ]
+            ]
+        ],
         'getCollectionFolder' => [
             'httpMethod' => 'GET',
             'uri' => 'users/{username}/collection/folders/{folder_id}',
