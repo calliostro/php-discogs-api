@@ -650,6 +650,40 @@ return [
                     'required' => false
                 ]
             ]
+        ],
+        'getUserLists' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/lists',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'username' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ],
+                'per_page' => [
+                	'type' => 'integer',
+                	'location' => 'query',
+                	'required' => false
+                ],
+                'page' => [
+                	'type' => 'string',
+                	'location' => 'query',
+                	'required' => false
+                ]
+            ]
+        ],
+        'getLists' => [
+            'httpMethod' => 'GET',
+            'uri' => 'lists/{list_id}',
+            'responseModel' => 'GetResponse',
+            'parameters' => [
+                'list_id' => [
+                    'type' => 'string',
+                    'location' => 'uri',
+                    'required' => true
+                ]
+            ]
         ]
     ],
     'models' => [

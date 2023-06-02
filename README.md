@@ -243,12 +243,34 @@ foreach ($release['images'] as $image) {
 
 ```
 
-### User Wantlist
+### Get user lists
 
 ```php
 <?php
 
-$folders = $client->getWantlist([
+$userLists = $client->getUserLists([
+    'username' => 'example',
+    'page' => 1, #default
+    'per_page' => 500 #min 1, max 500, default 50
+]);
+```
+
+### Get list
+
+```php
+<?php
+
+$listItems = $client->getLists([
+    'list_id' => 1
+]);
+```
+  
+### Get user wantlist
+
+```php
+<?php
+
+$wantlist = $client->getWantlist([
     'username' => 'example',
     'page' => 1, #default
     'per_page' => 500 #min 1, max 500, default 50
