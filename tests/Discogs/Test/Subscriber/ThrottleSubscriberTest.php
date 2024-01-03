@@ -90,7 +90,7 @@ final class ThrottleSubscriberTest extends TestCase
             $client->request('GET', '/');
         } catch (Exception $e) {
             $this->assertInstanceOf(ClientException::class, $e);
-            $this->assertEquals($e->getCode(), 429);
+            $this->assertEquals(429, $e->getCode());
         }
 
         $after = microtime(true);

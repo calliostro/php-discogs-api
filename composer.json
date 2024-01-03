@@ -6,12 +6,12 @@
     "license": "MIT",
     "require": {
         "php": ">=7.3",
-        "guzzlehttp/guzzle": "^7.0 || ^8.0",
-        "guzzlehttp/guzzle-services": "^1.2",
-        "guzzlehttp/oauth-subscriber": "^0.4"
+        "guzzlehttp/guzzle": "^7.0",
+        "guzzlehttp/guzzle-services": "^1.2|^1.3|^1.4",
+        "guzzlehttp/oauth-subscriber": "^0.4|^0.5|^0.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.5.23 || ^9.0",
+        "phpunit/phpunit": "^8.5.23|^9.0|^10.0",
         "ext-json": "*"
     },
     "authors": [
@@ -33,7 +33,7 @@
         }
     },
     "suggest": {
-        "calliostro/discogs-bundle": "For integrating Discogs into Symfony 5",
+        "calliostro/discogs-bundle": "For integrating Discogs into Symfony",
         "ricbra/discogs-bundle": "For integrating Discogs into Symfony 2"
     },
     "scripts":{

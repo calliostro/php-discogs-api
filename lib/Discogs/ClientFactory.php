@@ -29,7 +29,7 @@ final class ClientFactory
         return new DiscogsClient($client, $description);
     }
 
-    private static function &mergeRecursive(array &$array1, &$array2 = null): array
+    private static function &mergeRecursive(array $array1, $array2 = null): array
     {
         $merged = $array1;
 
@@ -37,7 +37,7 @@ final class ClientFactory
             foreach ($array2 as $key => $val) {
                 if (is_array($val)) {
                     $merged[$key] = isset($merged[$key]) && is_array($merged[$key]) ?
-                        self::mergeRecursive($merged[$key], $array2[$key]) : $val;
+                        self::mergeRecursive($merged[$key], $val) : $val;
                 } else {
                     $merged[$key] = $val;
                 }

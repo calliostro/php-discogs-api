@@ -3,7 +3,7 @@
 namespace Discogs\Subscriber;
 
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
@@ -27,7 +27,7 @@ final class ThrottleSubscriber
             int $retries,
             Request $request,
             Response $response = null,
-            RequestException $exception = null
+            TransferException $exception = null
         ) {
             if ($retries >= $this->max_retries) {
                 return false;

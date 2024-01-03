@@ -1,7 +1,6 @@
 Discogs Api
 ===========
 
-[![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.png)](https://app.travis-ci.com/github/calliostro/php-discogs-api)
 [![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](//packagist.org/packages/calliostro/php-discogs-api)
 [![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](//packagist.org/packages/calliostro/php-discogs-api)
 
@@ -243,7 +242,9 @@ foreach ($release['images'] as $image) {
 
 ```
 
-### Get user lists
+### User lists
+
+#### Get user lists
 
 ```php
 <?php
@@ -255,7 +256,7 @@ $userLists = $client->getUserLists([
 ]);
 ```
 
-### Get list
+#### Get user list items
 
 ```php
 <?php
