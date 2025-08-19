@@ -1,25 +1,53 @@
-Discogs Api
-===========
+# Discogs API - PHP Library
 
 [![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](//packagist.org/packages/calliostro/php-discogs-api)
 [![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](//packagist.org/packages/calliostro/php-discogs-api)
 
-This library is a PHP 7.3 / PHP 8.x implementation of the [Discogs API v2.0.](https://www.discogs.com/developers/index.html)
+This library is a PHP 7.3+ / PHP 8.x implementation of the [Discogs API v2.0.](https://www.discogs.com/developers/index.html)
 The Discogs API is a REST-based interface. By using this library you don't have to worry about communicating with the
 API: all the hard work has already be done.
 
+**Tested & Supported PHP Versions:** 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, 8.4
+
+> **Note:** All versions fully tested and production-ready. PHP 8.4 shows minimal deprecation notices from PHPUnit itself (not affecting functionality).
+
+## 🚀 API Coverage
+
+This library implements all major Discogs API endpoints:
+
+- ✅ **Database:** Search, Artists, Releases, Masters, Labels
+- ✅ **User Management:** Profile, Collection, Wantlist, Lists
+- ✅ **Marketplace:** Orders, Inventory, Listings, Bulk operations
+- ✅ **Authentication:** Personal tokens, OAuth 1.0a, Consumer keys
+
+## ⚡ Quick Start
+
+```php
+<?php
+use Discogs\ClientFactory;
+
+// Create client with User-Agent (required by Discogs)
+$client = ClientFactory::factory([
+    'headers' => ['User-Agent' => 'MyApp/1.0 +https://mysite.com']
+]);
+
+// Search for music
+$results = $client->search(['q' => 'Pink Floyd', 'type' => 'artist']);
+
+// Get detailed information
+$artist = $client->getArtist(['id' => $results['results'][0]['id']]);
+echo $artist['name']; // "Pink Floyd"
+```
 
 License
 -------
 
 This library is released under the MIT license. See the complete license in the LICENSE file.
 
-
 Symfony Bundle
 --------------
 
 For the integration of Discogs into Symfony 5 or Symfony 6, see [calliostro/discogs-bundle](https://github.com/calliostro/discogs-bundle).
-
 
 Installation
 ------------
@@ -32,7 +60,23 @@ Next do:
 Requirements
 ------------
 
-PHP 7.3 or PHP 8.x
+- **PHP:** 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, 8.4 (tested and officially supported)
+- **ext-json:** JSON extension
+- **cURL extension:** für HTTP-Requests über Guzzle
+
+### Testing
+
+Run tests with:
+
+**For PHP 8.0+ (default configuration):**
+```bash
+vendor/bin/phpunit
+```
+
+**For PHP 7.3-7.4 (legacy configuration):**
+```bash
+vendor/bin/phpunit --configuration phpunit-legacy.xml.dist
+```
 
 Usage
 -----
@@ -72,12 +116,12 @@ $client = Discogs\ClientFactory::factory(['handler'=>$handler]);
 
 #### Authentication
 
-Discogs API allow to access protected endpoints with either a simple [Discogs Auth Flow](https://www.discogs.com/developers/#page:authentication,header:authentication-discogs-auth-flow) or a more advanced (and more complex) [Oauth Flow](https://www.discogs.com/developers/#page:authentication,header:authentication-oauth-flow)
+Discogs API allow to access protected endpoints with either a simple [Discogs Auth Flow](https://www.discogs.com/developers/#page:authentication,header:authentication-discogs-auth-flow) or a more advanced (and more complex) [Oauth Flow](https://www.discogs.com/developers/$page:authentication,header:authentication-oauth-flow)
 
 ### Discogs Auth
 
 As stated in the Discogs Authentication documentation:
-> In order to access protected endpoints, you’ll need to register for either a consumer key and secret or user token, depending on your situation:
+> In order to access protected endpoints, you'll need to register for either a consumer key and secret or user token, depending on your situation:
 > - To easily access your own user account information, use a *User token*.
 > - To get access to an endpoint that requires authentication and build 3rd party apps, use a *Consumer Key and Secret*.
 
@@ -91,7 +135,6 @@ $client = ClientFactory::factory([
 ]);
 ```
 
-
 Authenticate with personal access token (you can get it from https://www.discogs.com/settings/developers):
 
 ```php
@@ -103,7 +146,6 @@ $client = ClientFactory::factory([
 ]);
 ```
 
-
 ### OAuth
 There are a lot of endpoints which require OAuth. Lucky for you using Guzzle this is peanuts. If you're having trouble 
 obtaining the token and token_secret, please check out 
@@ -113,9 +155,9 @@ obtaining the token and token_secret, please check out
 <?php
 
 $oauth = new GuzzleHttp\Subscriber\Oauth\Oauth1([
-    'consumer_key'    => $consumerKey, // from Discogs developer page
-    'consumer_secret' => $consumerSecret, // from Discogs developer page
-    'token'           => $token['oauth_token'], // get this using a OAuth library
+    'consumer_key'    => $consumerKey,                // from Discogs developer page
+    'consumer_secret' => $consumerSecret,             // from Discogs developer page
+    'token'           => $token['oauth_token'],       // get this using a OAuth library
     'token_secret'    => $token['oauth_token_secret'] // get this using a OAuth library
 ]);
 $handler = GuzzleHttp\HandlerStack::create();
@@ -145,10 +187,10 @@ $response = $client->search([
 ]);
 
 foreach ($container as $row) {
-    print $row['request'] -> getMethod(); // GET
+    print $row['request'] -> getMethod();        // GET
     print $row['request'] -> getRequestTarget(); // /database/search?q=searchstring
-    print strval($row['request'] -> getUri()); // https://api.discogs.com/database/search?q=searchstring
-    print $row['response'] -> getStatusCode(); // 200
+    print strval($row['request'] -> getUri());   // https://api.discogs.com/database/search?q=searchstring
+    print $row['response'] -> getStatusCode();   // 200
     print $row['response'] -> getReasonPhrase(); // OK
 }
 ```
@@ -174,7 +216,6 @@ var_dump($response['pagination']);
 
 // Dump all data
 var_dump($response->toArray());
-
 ```
 
 ### Get information about a label:
@@ -185,7 +226,6 @@ var_dump($response->toArray());
 $label = $client->getLabel([
     'id' => 1
 ]);
-
 ```
 
 ### Get information about an artist:
@@ -196,7 +236,6 @@ $label = $client->getLabel([
 $artist = $client->getArtist([
     'id' => 1
 ]);
-
 ```
 
 ### Get information about a release:
@@ -239,7 +278,6 @@ foreach ($release['images'] as $image) {
     // image blob itself
     echo $client->getHttpClient()->get($image['uri'])->getBody()->getContents();
 }
-
 ```
 
 ### User lists
@@ -251,8 +289,8 @@ foreach ($release['images'] as $image) {
 
 $userLists = $client->getUserLists([
     'username' => 'example',
-    'page' => 1, #default
-    'per_page' => 500 #min 1, max 500, default 50
+    'page' => 1,      // default
+    'per_page' => 500 // min 1, max 500, default 50
 ]);
 ```
 
@@ -273,8 +311,8 @@ $listItems = $client->getLists([
 
 $wantlist = $client->getWantlist([
     'username' => 'example',
-    'page' => 1, #default
-    'per_page' => 500 #min 1, max 500, default 50
+    'page' => 1,      // default
+    'per_page' => 500 // min 1, max 500, default 50
 ]);
 ```
 
@@ -293,7 +331,6 @@ $folders = $client->getCollectionFolders([
 ```
 
 #### Get collection folder
-
 
 ```php
 <?php
@@ -342,6 +379,7 @@ $response = $client->changeListing([
     'price' => 3.49,
 ]);
 ```
+
 #### Delete a Listing
 ```php
 <?php
@@ -372,16 +410,72 @@ $response = $client->deleteInventory(['upload' => fopen('path/to/file.csv', 'r')
 // 321
 ```
 
+### Orders & Marketplace
+
+#### Get orders
+```php
+<?php
+
+$orders = $client->getOrders([
+    'status' => 'New Order', // optional
+    'sort' => 'created',     // optional
+    'sort_order' => 'desc'   // optional
+]);
+```
+
+#### Get specific order
+```php
+<?php
+
+$order = $client->getOrder(['order_id' => '123-456']);
+```
+
+#### Update order
+```php
+<?php
+
+$response = $client->changeOrder([
+    'order_id' => '123-456',
+    'status' => 'Shipped',
+    'shipping' => 5.00
+]);
+```
+
+### User Profile & Identity
+
+#### Get authenticated user identity
+```php
+<?php
+
+$identity = $client->getOAuthIdentity();
+```
+
+#### Get user profile
+```php
+<?php
+
+$profile = $client->getProfile(['username' => 'discogs_user']);
+```
+
+#### Get user inventory
+```php
+<?php
+
+$inventory = $client->getInventory([
+    'username' => 'seller_name',
+    'status' => 'For Sale', // optional
+    'per_page' => 100       // optional
+]);
+```
+
 Documentation
 -------------
 Further documentation can be found at the [Discogs API v2.0 Documentation](https://www.discogs.com/developers/index.html).
-
 
 Contributing
 ------------
 
 Implemented a missing feature? You can request it. And creating a pull request is an even better way to get things done.
-
 
 Thanks to
 ---------
