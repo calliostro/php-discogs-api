@@ -1,6 +1,6 @@
 # Discogs API — PHP Library
 
-[![Build Status](https://api.travis-ci.com/calliostro/php-discogs-api.svg)](https://app.travis-ci.com/github/calliostro/php-discogs-api)
+[![CI](https://github.com/calliostro/php-discogs-api/workflows/CI/badge.svg)](https://github.com/calliostro/php-discogs-api/actions)
 [![Version](https://poser.pugx.org/calliostro/php-discogs-api/version)](https://packagist.org/packages/calliostro/php-discogs-api)
 [![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](https://packagist.org/packages/calliostro/php-discogs-api)
 
