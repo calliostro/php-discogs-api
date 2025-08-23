@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        dependencies: ['stable']
+        include:
+          # Test with lowest dependencies
+          - php-version: '7.3'
+            dependencies: 'lowest'
+          - php-version: '8.4'
+            dependencies: 'lowest'
+          # Test with development dependencies
+          - php-version: '8.4'
+            dependencies: 'dev'
+          # Test with PHP 8.5 nightly (allow failure)
+          - php-version: '8.5'
+            dependencies: 'stable'
+        
+    continue-on-error: ${{ matrix.dependencies == 'dev' || matrix.php-version == '8.5' }}
+    
+    name: PHP ${{ matrix.php-version }} - ${{ matrix.dependencies }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: dom, curl, libxml, mbstring, zip, json
+        coverage: none
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-
+
+    - name: Install dependencies (lowest)
+      if: matrix.dependencies == 'lowest'
+      run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction
+
+    - name: Install dependencies (stable)
+      if: matrix.dependencies == 'stable'
+      run: composer update --prefer-stable --prefer-dist --no-interaction
+
+    - name: Install dependencies (dev)
+      if: matrix.dependencies == 'dev'
+      run: |
+        composer config minimum-stability dev
+        composer update --prefer-dist --no-interaction
+
+    - name: Validate composer.json
+      run: composer validate --strict --no-check-lock
+
+    - name: Run PHPUnit tests
+      run: vendor/bin/phpunit
