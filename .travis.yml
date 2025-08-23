@@ -18,15 +18,27 @@ jobs:
     - php: 8.4
       env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
 
-    # Stable-deps runs  
+    # Stable-deps runs
     - php: 7.4
     - php: 8.0
     - php: 8.1
     - php: 8.2
     - php: 8.3
+      env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
+    - php: 8.4
+    - php: 8.5
+      env: COMPOSER_FLAGS="--ignore-platform-reqs"
+
+    # Dev-master check
+    - php: 8.4
+      env: STABILITY="dev"
+
+  allow_failures:
+    - env: STABILITY="dev"
+    - php: 8.5
 
 before_install:
-  - phpenv config-rm xdebug.ini || true
+  - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
   - if [[ -n "$STABILITY" ]]; then composer config minimum-stability ${STABILITY}; fi
   - if [[ -n "$DEPENDENCIES" ]]; then composer require --no-update ${DEPENDENCIES}; fi
 
