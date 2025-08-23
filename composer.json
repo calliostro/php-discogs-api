@@ -1,9 +1,30 @@
 {
     "name": "calliostro/php-discogs-api",
-    "description": "The Discogs API makes it easy for developers to communicate with the Discogs platform",
+    "description": "PHP library for the Discogs API — vinyl, music data & integration made easy",
     "type": "library",
-    "keywords": ["discogs", "api"],
+    "keywords": [
+        "php",
+        "discogs",
+        "discogs-api",
+        "music",
+        "api-client",
+        "web-api",
+        "audio",
+        "vinyl",
+        "guzzle",
+        "library"
+    ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Richard van den Brand",
+            "email": "richard@vandenbrand.org"
+        },
+        {
+            "name": "calliostro",
+            "email": "calliostro@gmail.com"
+        }
+    ],
     "require": {
         "php": "^7.3 || ^8.0",
         "guzzlehttp/guzzle": "^7.0",
@@ -19,18 +40,10 @@
         "preferred-install": "dist",
         "sort-packages": true
     },
-    "authors": [
-        {
-            "name": "Richard van den Brand",
-            "email": "richard@vandenbrand.org"
-        },
-        {
-            "name": "calliostro",
-            "email": "calliostro@gmail.com"
-        }
-    ],
     "autoload": {
-        "psr-0": { "Discogs": "lib/" }
+        "psr-0": {
+            "Discogs": "lib/"
+        }
     },
     "extra": {
         "branch-alias": {
