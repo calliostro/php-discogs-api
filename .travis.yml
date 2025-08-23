@@ -5,10 +5,6 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-env:
-  global:
-    - PHPUNIT_FLAGS="-v"
-
 jobs:
   fast_finish: true
   include:
@@ -24,7 +20,6 @@ jobs:
     - php: 8.1
     - php: 8.2
     - php: 8.3
-      env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
     - php: 8.4
     - php: 8.5
       env: COMPOSER_FLAGS="--ignore-platform-reqs"
@@ -38,7 +33,7 @@ jobs:
     - php: 8.5
 
 before_install:
-  - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
+  - phpenv config-rm xdebug.ini || true
   - if [[ -n "$STABILITY" ]]; then composer config minimum-stability ${STABILITY}; fi
   - if [[ -n "$DEPENDENCIES" ]]; then composer require --no-update ${DEPENDENCIES}; fi
 
@@ -47,4 +42,4 @@ install:
 
 script:
   - composer validate --strict --no-check-lock
-  - ./vendor/bin/phpunit $PHPUNIT_FLAGS
+  - ./vendor/bin/phpunit
