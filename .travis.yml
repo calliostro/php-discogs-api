@@ -1,5 +1,5 @@
 language: php
-dist: jammy
+dist: focal
 
 cache:
   directories:
@@ -11,8 +11,8 @@ jobs:
     # Lowest-deps runs
     - php: 7.3
       env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
-    - php: 8.4
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
+    - php: 7.4
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
 
     # Stable-deps runs
     - php: 7.3
@@ -23,7 +23,6 @@ jobs:
     - php: 8.1
     - php: 8.2
     - php: 8.3
-      env: COVERAGE=true PHPUNIT_FLAGS="--coverage-text"
     - php: 8.4
     - php: 8.5
       env: COMPOSER_FLAGS="--ignore-platform-reqs"
@@ -37,8 +36,7 @@ jobs:
     - php: 8.5
 
 before_install:
-  - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
-  - if [[ $COVERAGE == true ]]; then echo "xdebug.mode=coverage" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
+  - phpenv config-rm xdebug.ini || true
   - if [[ -n "$STABILITY" ]]; then composer config minimum-stability ${STABILITY}; fi
   - if [[ -n "$DEPENDENCIES" ]]; then composer require --no-update ${DEPENDENCIES}; fi
 
@@ -47,4 +45,9 @@ install:
 
 script:
   - composer validate --strict --no-check-lock
-  - ./vendor/bin/phpunit ${PHPUNIT_FLAGS:-} ${PHPUNIT_CONFIG:+--configuration ${PHPUNIT_CONFIG}}
+  - |
+    if [[ -n "$PHPUNIT_CONFIG" ]]; then
+      ./vendor/bin/phpunit --configuration ${PHPUNIT_CONFIG}
+    else
+      ./vendor/bin/phpunit
+    fi
