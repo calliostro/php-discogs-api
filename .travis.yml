@@ -1,36 +1,24 @@
 language: php
-sudo: false
+dist: jammy
+
 cache:
   directories:
     - $HOME/.composer/cache/files
-    - $HOME/symfony-bridge/.phpunit
 
 env:
   global:
     - PHPUNIT_FLAGS="-v"
-    - SYMFONY_PHPUNIT_DIR="$HOME/symfony-bridge/.phpunit"
 
-matrix:
+jobs:
   fast_finish: true
   include:
-    # Minimum supported dependencies with the latest and oldest PHP version
+    # Lowest-deps runs
+    - php: 7.3
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
     - php: 8.4
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 8.3
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 8.2
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 8.1
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 8.0
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 7.4
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
-    - php: 7.3
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" SYMFONY_DEPRECATIONS_HELPER="weak_vendors"
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
 
-      # Test the latest stable release
-    - php: 7.3
+    # Stable-deps runs
     - php: 7.4
     - php: 8.0
     - php: 8.1
@@ -38,26 +26,25 @@ matrix:
     - php: 8.3
       env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
     - php: 8.4
-      env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
+    - php: 8.5
+      env: COMPOSER_FLAGS="--ignore-platform-reqs"
 
-      # Latest commit to master
+    # Dev-master check
     - php: 8.4
       env: STABILITY="dev"
 
   allow_failures:
-    # Dev-master is allowed to fail.
     - env: STABILITY="dev"
+    - php: 8.5
 
 before_install:
   - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
-  - if ! [ -z "$STABILITY" ]; then composer config minimum-stability ${STABILITY}; fi;
-  - if ! [ -v "$DEPENDENCIES" ]; then composer require --no-update ${DEPENDENCIES}; fi;
+  - if [[ -n "$STABILITY" ]]; then composer config minimum-stability ${STABILITY}; fi
+  - if [[ -n "$DEPENDENCIES" ]]; then composer require --no-update ${DEPENDENCIES}; fi
 
 install:
   - composer update ${COMPOSER_FLAGS} --prefer-dist --no-interaction
 
 script:
   - composer validate --strict --no-check-lock
-  # simple-phpunit is the PHPUnit wrapper provided by the PHPUnit Bridge component and
-  # it helps with testing legacy code and deprecations (composer require symfony/phpunit-bridge)
   - ./vendor/bin/phpunit $PHPUNIT_FLAGS

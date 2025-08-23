@@ -1,5 +1,18 @@
-.idea
-vendor
+# Composer
+/vendor/
 composer.lock
-env/
-*.cache
+
+# PHPUnit
+.phpunit/
+.phpunit.result.cache
+.phpunit.cache/
+
+# IDE files
+.idea/
+.vscode/
+
+# Coverage reports
+coverage/
+
+# Environment files
+.env
