@@ -1,39 +1,29 @@
 language: php
-dist: focal
+dist: jammy
 
 cache:
   directories:
     - $HOME/.composer/cache/files
+
+env:
+  global:
+    - PHPUNIT_FLAGS="-v"
 
 jobs:
   fast_finish: true
   include:
     # Lowest-deps runs
     - php: 7.3
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
-    - php: 7.4
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
+    - php: 8.4
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
 
-    # Stable-deps runs
-    - php: 7.3
-      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
+    # Stable-deps runs  
     - php: 7.4
-      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
     - php: 8.0
     - php: 8.1
     - php: 8.2
     - php: 8.3
-    - php: 8.4
-    - php: 8.5
-      env: COMPOSER_FLAGS="--ignore-platform-reqs"
-
-    # Dev-master check
-    - php: 8.4
-      env: STABILITY="dev"
-
-  allow_failures:
-    - env: STABILITY="dev"
-    - php: 8.5
 
 before_install:
   - phpenv config-rm xdebug.ini || true
@@ -45,9 +35,4 @@ install:
 
 script:
   - composer validate --strict --no-check-lock
-  - |
-    if [[ -n "$PHPUNIT_CONFIG" ]]; then
-      ./vendor/bin/phpunit --configuration ${PHPUNIT_CONFIG}
-    else
-      ./vendor/bin/phpunit
-    fi
+  - ./vendor/bin/phpunit $PHPUNIT_FLAGS
