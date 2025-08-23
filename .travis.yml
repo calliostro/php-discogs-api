@@ -5,26 +5,23 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-env:
-  global:
-    - PHPUNIT_FLAGS="-v"
-
 jobs:
   fast_finish: true
   include:
     # Lowest-deps runs
     - php: 7.3
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist" PHPUNIT_FLAGS="-v"
     - php: 8.4
       env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
 
     # Stable-deps runs
     - php: 7.4
+      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist" PHPUNIT_FLAGS="-v"
     - php: 8.0
     - php: 8.1
     - php: 8.2
     - php: 8.3
-      env: COVERAGE=true PHPUNIT_FLAGS="-v --coverage-text"
+      env: COVERAGE=true PHPUNIT_FLAGS="--coverage-text"
     - php: 8.4
     - php: 8.5
       env: COMPOSER_FLAGS="--ignore-platform-reqs"
@@ -47,4 +44,4 @@ install:
 
 script:
   - composer validate --strict --no-check-lock
-  - ./vendor/bin/phpunit $PHPUNIT_FLAGS
+  - ./vendor/bin/phpunit ${PHPUNIT_FLAGS:-} ${PHPUNIT_CONFIG:+--configuration ${PHPUNIT_CONFIG}}
