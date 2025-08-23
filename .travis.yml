@@ -10,13 +10,15 @@ jobs:
   include:
     # Lowest-deps runs
     - php: 7.3
-      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist" PHPUNIT_FLAGS="-v"
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest" PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
     - php: 8.4
       env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
 
     # Stable-deps runs
+    - php: 7.3
+      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
     - php: 7.4
-      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist" PHPUNIT_FLAGS="-v"
+      env: PHPUNIT_CONFIG="phpunit-legacy.xml.dist"
     - php: 8.0
     - php: 8.1
     - php: 8.2
@@ -36,6 +38,7 @@ jobs:
 
 before_install:
   - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
+  - if [[ $COVERAGE == true ]]; then echo "xdebug.mode=coverage" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
   - if [[ -n "$STABILITY" ]]; then composer config minimum-stability ${STABILITY}; fi
   - if [[ -n "$DEPENDENCIES" ]]; then composer require --no-update ${DEPENDENCIES}; fi
 

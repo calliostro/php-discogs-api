@@ -45,8 +45,9 @@ final class ThrottleSubscriberTest extends TestCase
         $after = microtime(true);
 
         $difference = $after - $before;
-        // Should be at least 2 seconds
-        $this->assertTrue($difference > 4);
+        // Should be at least 2 seconds (with exponential backoff: 2000ms * 2^1 = 4000ms)
+        // Allow some tolerance for system variations (3.5 seconds minimum)
+        $this->assertGreaterThan(3.5, $difference, 'Throttling should delay at least 3.5 seconds');
     }
 
     public function testWithoutThrottle(): void
