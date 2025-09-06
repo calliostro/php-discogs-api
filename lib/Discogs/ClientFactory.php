@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the php-discogs-api.
  *
@@ -21,18 +22,15 @@ final class ClientFactory
             'headers' => ['User-Agent' => 'php-discogs-api/2.0.0 +https://github.com/calliostro/php-discogs-api'],
             'auth' => 'oauth',
         ];
-
         $client = new Client(self::mergeRecursive($defaultConfig, $config));
         $service = include __DIR__ . '/../../resources/service.php';
         $description = new Description($service);
-
         return new DiscogsClient($client, $description);
     }
 
     private static function &mergeRecursive(array $array1, $array2 = null): array
     {
         $merged = $array1;
-
         if (is_array($array2)) {
             foreach ($array2 as $key => $val) {
                 if (is_array($val)) {

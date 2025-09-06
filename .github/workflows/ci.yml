@@ -2,9 +2,24 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, 'legacy/v2.x', 'feature/**' ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, 'legacy/v2.x' ]
+  workflow_dispatch:
+    inputs:
+      php_version:
+        description: 'PHP version to test (optional, tests all if empty)'
+        required: false
+        default: ''
+      dependencies:
+        description: 'Dependencies type'
+        required: false
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - lowest
+          - dev
 
 jobs:
   tests:
