@@ -3,9 +3,11 @@
 composer.lock
 
 # PHPUnit
-.phpunit/
 .phpunit.result.cache
 .phpunit.cache/
+
+# PHPStan
+.phpstan/
 
 # IDE files
 .idea/

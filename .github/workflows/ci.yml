@@ -2,24 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ main, 'legacy/v2.x', 'feature/**' ]
+    branches: [ main, 'feature/v3.0.0', 'feature/**' ]
   pull_request:
-    branches: [ main, 'legacy/v2.x' ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       php_version:
         description: 'PHP version to test (optional, tests all if empty)'
         required: false
         default: ''
-      dependencies:
-        description: 'Dependencies type'
-        required: false
-        default: 'stable'
-        type: choice
-        options:
-          - stable
-          - lowest
-          - dev
 
 jobs:
   tests:
@@ -28,24 +19,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
         dependencies: ['stable']
         include:
           # Test with lowest dependencies
-          - php-version: '7.3'
+          - php-version: '8.1'
             dependencies: 'lowest'
           - php-version: '8.4'
             dependencies: 'lowest'
-          # Test with development dependencies
-          - php-version: '8.4'
-            dependencies: 'dev'
-          # Test with PHP 8.5 nightly (allow failure)
-          - php-version: '8.5'
-            dependencies: 'stable'
         
-    continue-on-error: ${{ matrix.dependencies == 'dev' || matrix.php-version == '8.5' }}
+    continue-on-error: ${{ matrix.php-version == '8.5' }}
     
-    name: PHP ${{ matrix.php-version }} - ${{ matrix.dependencies }}
+    name: Tests - PHP ${{ matrix.php-version }} (${{ matrix.dependencies }})
 
     steps:
     - name: Checkout code
@@ -76,14 +61,84 @@ jobs:
       if: matrix.dependencies == 'stable'
       run: composer update --prefer-stable --prefer-dist --no-interaction
 
-    - name: Install dependencies (dev)
-      if: matrix.dependencies == 'dev'
-      run: |
-        composer config minimum-stability dev
-        composer update --prefer-dist --no-interaction
-
     - name: Validate composer.json
       run: composer validate --strict --no-check-lock
 
     - name: Run PHPUnit tests
-      run: vendor/bin/phpunit
+      run: composer test
+
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: dom, curl, libxml, mbstring, zip, json
+        coverage: none
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-php-8.4-stable-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-8.4-stable-
+
+    - name: Install dependencies
+      run: composer update --prefer-stable --prefer-dist --no-interaction
+
+    - name: Run PHPStan static analysis
+      run: composer analyse
+      continue-on-error: true
+
+    - name: Run PHP CodeSniffer check
+      run: composer cs
+      continue-on-error: true
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: Coverage Report
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: dom, curl, libxml, mbstring, zip, json
+        coverage: xdebug
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-php-8.4-coverage-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-8.4-coverage-
+
+    - name: Install dependencies
+      run: composer update --prefer-stable --prefer-dist --no-interaction
+
+    - name: Generate coverage report
+      run: vendor/bin/phpunit --coverage-clover coverage.xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
