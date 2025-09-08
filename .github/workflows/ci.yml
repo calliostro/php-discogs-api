@@ -58,7 +58,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring, tokenizer
-          coverage: none
+          coverage: xdebug
           tools: composer:v2
 
       - name: Get composer cache directory
