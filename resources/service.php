@@ -1,697 +1,612 @@
 <?php
-/*
- * This file is part of the php-discogs-api.
- *
- * (c) Richard van den Brand <richard@vandenbrand.org>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 return [
     'baseUrl' => 'https://api.discogs.com/',
     'operations' => [
-        'getArtist' => [
+        // ===========================
+        // DATABASE METHODS
+        // ===========================
+        'artist.get' => [
             'httpMethod' => 'GET',
             'uri' => 'artists/{id}',
-            'responseModel' => 'GetResponse',
             'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
+                'id' => ['required' => true],
+            ],
         ],
-        'getArtistReleases' => [
+        'artist.releases' => [
             'httpMethod' => 'GET',
             'uri' => 'artists/{id}/releases',
-            'responseModel' => 'GetResponse',
             'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'sort' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'sort_order' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
+                'id' => ['required' => true],
+                'sort' => ['required' => false],
+                'sort_order' => ['required' => false],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
+        ],
+        'release.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'releases/{id}',
+            'parameters' => [
+                'id' => ['required' => true],
+                'curr_abbr' => ['required' => false],
+            ],
+        ],
+        'release.rating.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'releases/{release_id}/rating/{username}',
+            'parameters' => [
+                'release_id' => ['required' => true],
+                'username' => ['required' => true],
+            ],
+        ],
+        'release.rating.put' => [
+            'httpMethod' => 'PUT',
+            'uri' => 'releases/{release_id}/rating/{username}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'release_id' => ['required' => true],
+                'username' => ['required' => true],
+                'rating' => ['required' => true],
+            ],
+        ],
+        'release.rating.delete' => [
+            'httpMethod' => 'DELETE',
+            'uri' => 'releases/{release_id}/rating/{username}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'release_id' => ['required' => true],
+                'username' => ['required' => true],
+            ],
+        ],
+        'release.rating.community' => [
+            'httpMethod' => 'GET',
+            'uri' => 'releases/{release_id}/rating',
+            'parameters' => [
+                'release_id' => ['required' => true],
+            ],
+        ],
+        'release.stats' => [
+            'httpMethod' => 'GET',
+            'uri' => 'releases/{release_id}/stats',
+            'parameters' => [
+                'release_id' => ['required' => true],
+            ],
+        ],
+        'master.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'masters/{id}',
+            'parameters' => [
+                'id' => ['required' => true],
+            ],
+        ],
+        'master.versions' => [
+            'httpMethod' => 'GET',
+            'uri' => 'masters/{id}/versions',
+            'parameters' => [
+                'id' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+                'format' => ['required' => false],
+                'label' => ['required' => false],
+                'released' => ['required' => false],
+                'country' => ['required' => false],
+                'sort' => ['required' => false],
+                'sort_order' => ['required' => false],
+            ],
+        ],
+        'label.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'labels/{id}',
+            'parameters' => [
+                'id' => ['required' => true],
+            ],
+        ],
+        'label.releases' => [
+            'httpMethod' => 'GET',
+            'uri' => 'labels/{id}/releases',
+            'parameters' => [
+                'id' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
         ],
         'search' => [
             'httpMethod' => 'GET',
             'uri' => 'database/search',
-            'responseModel' => 'GetResponse',
             'parameters' => [
-                'q' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'type' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'title' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'release_title' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'credit' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'artist' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'anv' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'label' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'genre' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'style' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'country' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'year' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'format' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'catno' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'barcode' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'track' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'submitter' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'contributor' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
+                'q' => ['required' => false],
+                'type' => ['required' => false],
+                'title' => ['required' => false],
+                'release_title' => ['required' => false],
+                'credit' => ['required' => false],
+                'artist' => ['required' => false],
+                'anv' => ['required' => false],
+                'label' => ['required' => false],
+                'genre' => ['required' => false],
+                'style' => ['required' => false],
+                'country' => ['required' => false],
+                'year' => ['required' => false],
+                'format' => ['required' => false],
+                'catno' => ['required' => false],
+                'barcode' => ['required' => false],
+                'track' => ['required' => false],
+                'submitter' => ['required' => false],
+                'contributor' => ['required' => false],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
         ],
-        'getRelease' => [
-            'httpMethod' => 'GET',
-            'uri' => 'releases/{id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'curr_abbr' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'getMaster' => [
-            'httpMethod' => 'GET',
-            'uri' => 'masters/{id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ],
-        'getMasterVersions' => [
-            'httpMethod' => 'GET',
-            'uri' => 'masters/{id}/versions',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'getLabel' => [
-            'httpMethod' => 'GET',
-            'uri' => 'labels/{id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ],
-        'getLabelReleases' => [
-            'httpMethod' => 'GET',
-            'uri' => 'labels/{id}/releases',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'getOAuthIdentity' => [
+
+        // ===========================
+        // USER IDENTITY METHODS
+        // ===========================
+        'identity.get' => [
             'httpMethod' => 'GET',
             'uri' => 'oauth/identity',
-            'responseModel' => 'GetResponse',
+            'requiresAuth' => true,
         ],
-        'getProfile' => [
+        'user.get' => [
             'httpMethod' => 'GET',
             'uri' => 'users/{username}',
-            'responseModel' => 'GetResponse',
             'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
+                'username' => ['required' => true],
             ],
         ],
-        'getInventory' => [
-            'httpMethod' => 'GET',
-            'uri' => 'users/{username}/inventory',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'sort' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'sort_order' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'addInventory' => [
-            'summary' => 'Upload a CSV of listings to add to your inventory.',
+        'user.edit' => [
             'httpMethod' => 'POST',
-            'uri' => 'inventory/upload/add',
-            'responseModel' => 'GetResponse',
+            'uri' => 'users/{username}',
+            'requiresAuth' => true,
             'parameters' => [
-                'upload' => [
-                    'type' => 'any',
-                    'location' => 'multipart',
-                    'required' => true
-                ]
-            ]
-        ],
-        'deleteInventory' => [
-            'summary' => 'Upload a CSV of listings to delete from your inventory.',
-            'httpMethod' => 'POST',
-            'uri' => 'inventory/upload/delete',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'upload' => [
-                    'type' => 'any',
-                    'location' => 'multipart',
-                    'required' => true
-                ]
-            ]
-        ],
-        'getOrder' => [
-            'httpMethod' => 'GET',
-            'uri' => 'marketplace/orders/{order_id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'order_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ],
-        'getOrders' => [
-            'httpMethod' => 'GET',
-            'uri' => 'marketplace/orders',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'sort' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'sort_order' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'created_before' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'created_after' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ],
-                'archived' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false,
-                ]
-            ]
-        ],
-        'changeOrder' => [
-            'httpMethod' => 'POST',
-            'uri' => 'marketplace/orders/{order_id}',
-            'summary' => 'Edit the data associated with an order.',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'order_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'shipping' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ]
-            ]
-        ],
-        'getOrderMessages' => [
-            'httpMethod' => 'GET',
-            'uri' => 'marketplace/orders/{order_id}/messages',
-            'summary' => 'Returns a list of the order’s messages with the most recent first.',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'order_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ],
-        'addOrderMessage' => [
-            'httpMethod' => 'POST',
-            'uri' => 'marketplace/orders/{order_id}/messages',
-            'summary' => 'Adds a new message to the order’s message log.',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'order_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'message' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ]
-            ]
-        ],
-        'createListing' => [
-            'httpMethod' => 'POST',
-            'uri' => '/marketplace/listings',
-            'summary' => 'Create a Marketplace listing.',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'release_id' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => true
-                ],
-                'condition' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => true,
-                ],
-                'sleeve_condition' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'price' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => true,
-                ],
-                'comments' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'allow_offers' => [
-                    'type' => 'boolean',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => true,
-                ],
-                'external_id' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'location' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'weight' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'format_quantity' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ]
-            ]
-        ],
-        'changeListing' => [
-            'httpMethod' => 'POST',
-            'uri' => '/marketplace/listings/{listing_id}',
-            'summary' => 'Change a Marketplace listing.',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'listing_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true,
-                ],
-                'condition' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'sleeve_condition' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'price' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'comments' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'allow_offers' => [
-                    'type' => 'boolean',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'status' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'external_id' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'location' => [
-                    'type' => 'string',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'weight' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ],
-                'format_quantity' => [
-                    'type' => 'number',
-                    'location' => 'json',
-                    'required' => false,
-                ],
+                'username' => ['required' => true],
+                'name' => ['required' => false],
+                'home_page' => ['required' => false],
+                'location' => ['required' => false],
+                'profile' => ['required' => false],
+                'curr_abbr' => ['required' => false],
             ],
         ],
-        'deleteListing' => [
-            'httpMethod' => 'DELETE',
-            'uri' => 'marketplace/listings/{listing_id}',
-            'responseModel' => 'GetResponse',
+        'user.submissions' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/submissions',
             'parameters' => [
-                'listing_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
+                'username' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
         ],
-        'getCollectionFolders' => [
+        'user.contributions' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/contributions',
+            'parameters' => [
+                'username' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
+        ],
+
+        // ===========================
+        // COLLECTION METHODS
+        // ===========================
+        'collection.folders' => [
             'httpMethod' => 'GET',
             'uri' => 'users/{username}/collection/folders',
-            'responseModel' => 'GetResponse',
             'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ],
-        'getWantlist' => [
-            'httpMethod' => 'GET',
-            'uri' => 'users/{username}/wants',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'getCollectionFolder' => [
-            'httpMethod' => 'GET',
-            'uri' => 'users/{username}/collection/folders/{folder_id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'folder_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-            ]
-        ],
-        'getCollectionItemsByFolder' => [
-            'httpMethod' => 'GET',
-            'uri' => 'users/{username}/collection/folders/{folder_id}/releases',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'folder_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'per_page' => [
-                    'type' => 'integer',
-                    'location' => 'query',
-                    'required' => false
-                ],
-                'page' => [
-                    'type' => 'string',
-                    'location' => 'query',
-                    'required' => false
-                ]
-            ]
-        ],
-        'getUserLists' => [
-            'httpMethod' => 'GET',
-            'uri' => 'users/{username}/lists',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'username' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ],
-                'per_page' => [
-                	'type' => 'integer',
-                	'location' => 'query',
-                	'required' => false
-                ],
-                'page' => [
-                	'type' => 'string',
-                	'location' => 'query',
-                	'required' => false
-                ]
-            ]
-        ],
-        'getLists' => [
-            'httpMethod' => 'GET',
-            'uri' => 'lists/{list_id}',
-            'responseModel' => 'GetResponse',
-            'parameters' => [
-                'list_id' => [
-                    'type' => 'string',
-                    'location' => 'uri',
-                    'required' => true
-                ]
-            ]
-        ]
-    ],
-    'models' => [
-        'GetResponse' => [
-            'type' => 'object',
-            'additionalProperties' => [
-                'location' => 'json'
+                'username' => ['required' => true],
             ],
         ],
-    ]
+        'collection.folder.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/collection/folders/{folder_id}',
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+            ],
+        ],
+        'collection.folder.create' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/collection/folders',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'name' => ['required' => true],
+            ],
+        ],
+        'collection.folder.edit' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/collection/folders/{folder_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'name' => ['required' => true],
+            ],
+        ],
+        'collection.folder.delete' => [
+            'httpMethod' => 'DELETE',
+            'uri' => 'users/{username}/collection/folders/{folder_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+            ],
+        ],
+        'collection.items' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/collection/folders/{folder_id}/releases',
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+                'sort' => ['required' => false],
+                'sort_order' => ['required' => false],
+            ],
+        ],
+        'collection.items.by_release' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/collection/releases/{release_id}',
+            'parameters' => [
+                'username' => ['required' => true],
+                'release_id' => ['required' => true],
+            ],
+        ],
+        'collection.add_release' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/collection/folders/{folder_id}/releases/{release_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'release_id' => ['required' => true],
+            ],
+        ],
+        'collection.edit_release' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'release_id' => ['required' => true],
+                'instance_id' => ['required' => true],
+                'rating' => ['required' => false],
+                'folder_id_new' => ['required' => false],
+            ],
+        ],
+        'collection.remove_release' => [
+            'httpMethod' => 'DELETE',
+            'uri' => 'users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'release_id' => ['required' => true],
+                'instance_id' => ['required' => true],
+            ],
+        ],
+        'collection.custom_fields' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/collection/fields',
+            'parameters' => [
+                'username' => ['required' => true],
+            ],
+        ],
+        'collection.edit_field' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}/fields/{field_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'folder_id' => ['required' => true],
+                'release_id' => ['required' => true],
+                'instance_id' => ['required' => true],
+                'field_id' => ['required' => true],
+                'value' => ['required' => true],
+            ],
+        ],
+        'collection.value' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/collection/value',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+            ],
+        ],
+
+        // ===========================
+        // WANTLIST METHODS
+        // ===========================
+        'wantlist.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/wants',
+            'parameters' => [
+                'username' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
+        ],
+        'wantlist.add' => [
+            'httpMethod' => 'PUT',
+            'uri' => 'users/{username}/wants/{release_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'release_id' => ['required' => true],
+                'notes' => ['required' => false],
+                'rating' => ['required' => false],
+            ],
+        ],
+        'wantlist.edit' => [
+            'httpMethod' => 'POST',
+            'uri' => 'users/{username}/wants/{release_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'release_id' => ['required' => true],
+                'notes' => ['required' => false],
+                'rating' => ['required' => false],
+            ],
+        ],
+        'wantlist.remove' => [
+            'httpMethod' => 'DELETE',
+            'uri' => 'users/{username}/wants/{release_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'username' => ['required' => true],
+                'release_id' => ['required' => true],
+            ],
+        ],
+
+        // ===========================
+        // MARKETPLACE METHODS
+        // ===========================
+        'inventory.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/inventory',
+            'parameters' => [
+                'username' => ['required' => true],
+                'status' => ['required' => false],
+                'sort' => ['required' => false],
+                'sort_order' => ['required' => false],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
+        ],
+        'listing.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/listings/{listing_id}',
+            'parameters' => [
+                'listing_id' => ['required' => true],
+                'curr_abbr' => ['required' => false],
+            ],
+        ],
+        'listing.create' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/listings',
+            'requiresAuth' => true,
+            'parameters' => [
+                'release_id' => ['required' => true],
+                'condition' => ['required' => true],
+                'sleeve_condition' => ['required' => false],
+                'price' => ['required' => true],
+                'comments' => ['required' => false],
+                'allow_offers' => ['required' => false],
+                'status' => ['required' => true],
+                'external_id' => ['required' => false],
+                'location' => ['required' => false],
+                'weight' => ['required' => false],
+                'format_quantity' => ['required' => false],
+            ],
+        ],
+        'listing.update' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/listings/{listing_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'listing_id' => ['required' => true],
+                'condition' => ['required' => false],
+                'sleeve_condition' => ['required' => false],
+                'price' => ['required' => false],
+                'comments' => ['required' => false],
+                'allow_offers' => ['required' => false],
+                'status' => ['required' => false],
+                'external_id' => ['required' => false],
+                'location' => ['required' => false],
+                'weight' => ['required' => false],
+                'format_quantity' => ['required' => false],
+                'curr_abbr' => ['required' => false],
+            ],
+        ],
+        'listing.delete' => [
+            'httpMethod' => 'DELETE',
+            'uri' => 'marketplace/listings/{listing_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'listing_id' => ['required' => true],
+            ],
+        ],
+        'marketplace.fee' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/fee/{price}',
+            'parameters' => [
+                'price' => ['required' => true],
+            ],
+        ],
+        'marketplace.fee_currency' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/fee/{price}/{currency}',
+            'parameters' => [
+                'price' => ['required' => true],
+                'currency' => ['required' => true],
+            ],
+        ],
+        'marketplace.price_suggestions' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/price_suggestions/{release_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'release_id' => ['required' => true],
+            ],
+        ],
+        'marketplace.stats' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/stats/{release_id}',
+            'parameters' => [
+                'release_id' => ['required' => true],
+                'curr_abbr' => ['required' => false],
+            ],
+        ],
+        'order.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/orders/{order_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'order_id' => ['required' => true],
+            ],
+        ],
+        'orders.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/orders',
+            'requiresAuth' => true,
+            'parameters' => [
+                'status' => ['required' => false],
+                'sort' => ['required' => false],
+                'sort_order' => ['required' => false],
+                'created_before' => ['required' => false],
+                'created_after' => ['required' => false],
+                'archived' => ['required' => false],
+            ],
+        ],
+        'order.update' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/orders/{order_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'order_id' => ['required' => true],
+                'status' => ['required' => false],
+                'shipping' => ['required' => false],
+            ],
+        ],
+        'order.messages' => [
+            'httpMethod' => 'GET',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'requiresAuth' => true,
+            'parameters' => [
+                'order_id' => ['required' => true],
+            ],
+        ],
+        'order.message.add' => [
+            'httpMethod' => 'POST',
+            'uri' => 'marketplace/orders/{order_id}/messages',
+            'requiresAuth' => true,
+            'parameters' => [
+                'order_id' => ['required' => true],
+                'message' => ['required' => false],
+                'status' => ['required' => false],
+            ],
+        ],
+
+        // ===========================
+        // INVENTORY EXPORT METHODS
+        // ===========================
+        'inventory.export.create' => [
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/export',
+            'requiresAuth' => true,
+        ],
+        'inventory.export.list' => [
+            'httpMethod' => 'GET',
+            'uri' => 'inventory/export',
+            'requiresAuth' => true,
+        ],
+        'inventory.export.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'inventory/export/{export_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'export_id' => ['required' => true],
+            ],
+        ],
+        'inventory.export.download' => [
+            'httpMethod' => 'GET',
+            'uri' => 'inventory/export/{export_id}/download',
+            'requiresAuth' => true,
+            'parameters' => [
+                'export_id' => ['required' => true],
+            ],
+        ],
+
+        // ===========================
+        // INVENTORY UPLOAD METHODS
+        // ===========================
+        'inventory.upload.add' => [
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/add',
+            'requiresAuth' => true,
+            'parameters' => [
+                'upload' => ['required' => true],
+            ],
+        ],
+        'inventory.upload.change' => [
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/change',
+            'requiresAuth' => true,
+            'parameters' => [
+                'upload' => ['required' => true],
+            ],
+        ],
+        'inventory.upload.delete' => [
+            'httpMethod' => 'POST',
+            'uri' => 'inventory/upload/delete',
+            'requiresAuth' => true,
+            'parameters' => [
+                'upload' => ['required' => true],
+            ],
+        ],
+        'inventory.upload.list' => [
+            'httpMethod' => 'GET',
+            'uri' => 'inventory/upload',
+            'requiresAuth' => true,
+        ],
+        'inventory.upload.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'inventory/upload/{upload_id}',
+            'requiresAuth' => true,
+            'parameters' => [
+                'upload_id' => ['required' => true],
+            ],
+        ],
+
+        // ===========================
+        // USER LISTS METHODS
+        // ===========================
+        'user.lists' => [
+            'httpMethod' => 'GET',
+            'uri' => 'users/{username}/lists',
+            'parameters' => [
+                'username' => ['required' => true],
+                'per_page' => ['required' => false],
+                'page' => ['required' => false],
+            ],
+        ],
+        'list.get' => [
+            'httpMethod' => 'GET',
+            'uri' => 'lists/{list_id}',
+            'parameters' => [
+                'list_id' => ['required' => true],
+            ],
+        ],
+    ],
+    'client' => [
+        'class' => 'GuzzleHttp\Client',
+        'options' => [
+            'base_uri' => 'https://api.discogs.com/',
+            'timeout' => 30,
+            'headers' => [
+                'User-Agent' => 'DiscogsClient/3.0 (+https://github.com/calliostro/php-discogs-api)',
+                'Accept' => 'application/json',
+            ],
+        ],
+    ],
 ];

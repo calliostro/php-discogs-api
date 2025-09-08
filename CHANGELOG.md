@@ -5,13 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-08
+
+### Added
+
+- Ultra-lightweight 2-class architecture: `ClientFactory` and `DiscogsApiClient`
+- Magic method API calls: `$client->artistGet(['id' => '108713'])`
+- Complete API coverage: 65+ endpoints across all Discogs areas
+- Multiple authentication methods: OAuth, Personal Token, or anonymous
+- Modern PHP 8.1–8.5 support with strict typing
+- 100% test coverage with 43 comprehensive tests
+- PHPStan Level 8 static analysis
+- GitHub Actions CI with multi-version testing and enhanced branch support
+- Codecov integration for code coverage reporting
+
+### Changed
+
+- **BREAKING**: Namespace changed from `Discogs\*` to `Calliostro\Discogs\*`
+- **BREAKING**: API surface changed from Guzzle Services to magic methods
+- **BREAKING**: Minimum PHP version now 8.1+ (was 7.3)
+- Simplified dependencies: removed Guzzle Services, Command, OAuth Subscriber
+- Replace `squizlabs/php_codesniffer` with `friendsofphp/php-cs-fixer` for code style checking
+- Update code style standard from PSR-12 via PHPCS to PSR-12 via PHP-CS-Fixer
+- Add `.php-cs-fixer.php` configuration file with PSR-12 rules
+- Update composer scripts: `cs` and `cs-fix` now use php-cs-fixer instead of phpcs/phpcbf
+- Update README badges for better consistency and proper branch links
+- Enhanced CI workflow with comprehensive PHP version matrix (8.1–8.5)
+- Add codecov.yml configuration for coverage reporting
+
+### Removed
+
+- Guzzle Services dependency and all related complexity
+- ThrottleSubscriber (handle rate limiting in your application)
+- Support for PHP 7.3–8.0
+
 ## [2.1.3](https://github.com/calliostro/php-discogs-api/releases/tag/v2.1.3) – 2025-09-06
 
 ### Changed
 
 - Repository restructuring: Renamed master branch to main
-- Updated CI workflow to use the main branch instead of master  
-- Updated CI badge in README.md to reference the main branch
+- Updated CI workflow and badges to use the main branch
 - Prepared for legacy branch support in v2.x series
 
 ### Infrastructure
@@ -25,8 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GitHub Actions CI – Migrated from Travis CI for improved build reliability and faster feedback
 - PHP 8.5 nightly support – Early compatibility testing with the upcoming PHP version
-- Enhanced project metadata – Improved description, keywords, and author
-  information in composer.json
+- Enhanced project metadata – Improved description, keywords, and author information in composer.json
 
 ### Changed
 
@@ -117,7 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved PHP 8.x compatibility and stability
 
-## [2.0.1](https://github.com/calliostro/php-discogs-api/releases/tag/v2.0.1) – 2021-04-17
+## [2.0.1](https://github.com/calliostro/php-discogs-api/releases/tag/v2.1.1) – 2021-04-17
 
 ### Added
 
@@ -153,10 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This library is based on the excellent work of:
 
-- [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api)  
-  - Original implementation
-- [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api)  
-  - Enhanced version
+- [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api) - Original implementation
+- [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api) - Enhanced version
 
 ## Legacy Versions
 

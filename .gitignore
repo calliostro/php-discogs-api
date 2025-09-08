@@ -3,13 +3,14 @@
 composer.lock
 
 # PHPUnit
-.phpunit/
 .phpunit.result.cache
 .phpunit.cache/
 
-# IDE files
-.idea/
-.vscode/
+# PHPStan
+.phpstan/
+
+# PHP CS Fixer
+.php-cs-fixer.cache
 
 # Coverage reports
 coverage/

@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd" backupGlobals="false" colors="true" bootstrap="./vendor/autoload.php" executionOrder="depends,defects">
-  <php>
-    <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
-    <ini name="intl.default_locale" value="en"/>
-    <ini name="intl.error_level" value="0"/>
-    <ini name="memory_limit" value="-1"/>
-  </php>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         colors="true"
+         testdox="true"
+         cacheDirectory=".phpunit.cache"
+         beStrictAboutOutputDuringTests="true"
+         executionOrder="depends,defects"
+         failOnWarning="false"
+         failOnRisky="true"
+         displayDetailsOnIncompleteTests="true"
+         displayDetailsOnSkippedTests="true">
   <testsuites>
-    <testsuite name="php-discogs-api Test Suite">
-      <directory>tests/Discogs/</directory>
+    <testsuite name="Discogs API Test Suite">
+      <directory>tests</directory>
     </testsuite>
   </testsuites>
-  <coverage>
+  <source>
     <include>
-      <directory suffix=".php">./lib</directory>
+      <directory>src</directory>
     </include>
-  </coverage>
+  </source>
+  <php>
+    <ini name="error_reporting" value="E_ALL"/>
+    <ini name="memory_limit" value="-1"/>
+  </php>
 </phpunit>
