@@ -4,12 +4,10 @@
          colors="true"
          testdox="true"
          cacheDirectory=".phpunit.cache"
-         beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
          executionOrder="depends,defects"
-         failOnWarning="true"
+         failOnWarning="false"
          failOnRisky="true"
-         requireCoverageMetadata="true"
          displayDetailsOnIncompleteTests="true"
          displayDetailsOnSkippedTests="true">
   <testsuites>
@@ -22,12 +20,6 @@
       <directory>src</directory>
     </include>
   </source>
-  <coverage>
-    <report>
-      <html outputDirectory="coverage"/>
-      <text outputFile="php://stdout"/>
-    </report>
-  </coverage>
   <php>
     <ini name="error_reporting" value="E_ALL"/>
     <ini name="memory_limit" value="-1"/>

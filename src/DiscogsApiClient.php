@@ -77,7 +77,7 @@ final class DiscogsApiClient
      */
     public function __call(string $method, array $arguments): array
     {
-        $params = $arguments[0] ?? [];
+        $params = is_array($arguments[0] ?? null) ? $arguments[0] : [];
 
         return $this->callOperation($method, $params);
     }
@@ -139,7 +139,7 @@ final class DiscogsApiClient
     private function convertMethodToOperation(string $method): string
     {
         // Split a camelCase into parts
-        $parts = preg_split('/(?=[A-Z])/', $method, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = preg_split('/(?=[A-Z])/', $method, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         if (!$parts) {
             return $method;

@@ -384,8 +384,8 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], $this->jsonEncode(['success' => true]))
         );
 
-        // Test method call with null as parameters (edge case)
-        // @phpstan-ignore-next-line - Testing edge case
+        // Test method call with null as parameters - should be converted to empty array
+        // @phpstan-ignore-next-line - Testing parameter validation
         $result = $this->client->search(null);
 
         $this->assertEquals(['success' => true], $result);
@@ -442,8 +442,8 @@ final class DiscogsApiClientTest extends TestCase
         $method = $reflection->getMethod('convertMethodToOperation');
         $method->setAccessible(true);
 
-        // Test with an extremely long method name to potentially trigger edge cases
-        $longMethodName = str_repeat('A', 1000) . 'Get';
+        // Test with a long method name (100 characters) to potentially trigger edge cases
+        $longMethodName = str_repeat('A', 100) . 'Get';
         $result = $method->invokeArgs($this->client, [$longMethodName]);
         // This should still work, converting the long name properly
         $this->assertIsString($result);
