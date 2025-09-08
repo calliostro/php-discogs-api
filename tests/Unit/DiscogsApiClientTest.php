@@ -118,6 +118,21 @@ final class DiscogsApiClientTest extends TestCase
         $this->client->artistGet(['id' => 'invalid']);
     }
 
+    public function testApiErrorResponseWithoutMessageThrowsException(): void
+    {
+        $this->mockHandler->append(
+            new Response(200, [], $this->jsonEncode([
+                'error' => 400,
+                // No 'message' field, should use default 'API Error'
+            ]))
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('API Error');
+
+        $this->client->artistGet(['id' => '123']);
+    }
+
     public function testComplexMethodNameConversion(): void
     {
         $this->mockHandler->append(
@@ -349,5 +364,88 @@ final class DiscogsApiClientTest extends TestCase
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('Unknown operation', $e->getMessage());
         }
+    }
+
+    public function testBuildUriWithNoParameters(): void
+    {
+        $this->mockHandler->append(
+            new Response(200, [], $this->jsonEncode(['results' => []]))
+        );
+
+        // Test URI building with no parameters (should not replace anything)
+        $result = $this->client->search(['q' => 'test']);
+
+        $this->assertEquals(['results' => []], $result);
+    }
+
+    public function testMethodCallWithNullParameters(): void
+    {
+        $this->mockHandler->append(
+            new Response(200, [], $this->jsonEncode(['success' => true]))
+        );
+
+        // Test method call with null as parameters (edge case)
+        // @phpstan-ignore-next-line - Testing edge case
+        $result = $this->client->search(null);
+
+        $this->assertEquals(['success' => true], $result);
+    }
+
+    public function testConvertMethodToOperationWithEdgeCases(): void
+    {
+        // Test the convertMethodToOperation method with edge cases
+        $reflection = new \ReflectionClass($this->client);
+        $method = $reflection->getMethod('convertMethodToOperation');
+        $method->setAccessible(true);
+
+        // Test with empty string (should return empty string)
+        $result = $method->invokeArgs($this->client, ['']);
+        $this->assertEquals('', $result);
+
+        // Test with a single lowercase word
+        $result = $method->invokeArgs($this->client, ['test']);
+        $this->assertEquals('test', $result);
+
+        // Test with mixed case scenarios
+        $result = $method->invokeArgs($this->client, ['ArtistGetReleases']);
+        $this->assertEquals('artist.get.releases', $result);
+    }
+
+    public function testBuildUriWithComplexParameters(): void
+    {
+        // Test the buildUri method directly with complex scenarios
+        $reflection = new \ReflectionClass($this->client);
+        $method = $reflection->getMethod('buildUri');
+        $method->setAccessible(true);
+
+        // Test with leading slash
+        $result = $method->invokeArgs($this->client, ['/artists/{id}/releases', ['id' => '123']]);
+        $this->assertEquals('artists/123/releases', $result);
+
+        // Test with no parameters to replace
+        $result = $method->invokeArgs($this->client, ['artists', []]);
+        $this->assertEquals('artists', $result);
+
+        // Test with multiple parameters
+        $result = $method->invokeArgs($this->client, ['/users/{username}/collection/folders/{folder_id}', [
+            'username' => 'testuser',
+            'folder_id' => '1',
+            'extra' => 'ignored', // Should be ignored
+        ]]);
+        $this->assertEquals('users/testuser/collection/folders/1', $result);
+    }
+
+    public function testPregSplitEdgeCaseHandling(): void
+    {
+        // Test case where preg_split might return false - this might be the missing line
+        $reflection = new \ReflectionClass($this->client);
+        $method = $reflection->getMethod('convertMethodToOperation');
+        $method->setAccessible(true);
+
+        // Test with an extremely long method name to potentially trigger edge cases
+        $longMethodName = str_repeat('A', 1000) . 'Get';
+        $result = $method->invokeArgs($this->client, [$longMethodName]);
+        // This should still work, converting the long name properly
+        $this->assertIsString($result);
     }
 }

@@ -9,9 +9,8 @@ composer.lock
 # PHPStan
 .phpstan/
 
-# IDE files
-.idea/
-.vscode/
+# PHP CS Fixer
+.php-cs-fixer.cache
 
 # Coverage reports
 coverage/

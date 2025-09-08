@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-07
+## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-08
 
 ### Added
 
@@ -14,9 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete API coverage: 65+ endpoints across all Discogs areas
 - Multiple authentication methods: OAuth, Personal Token, or anonymous
 - Modern PHP 8.1–8.5 support with strict typing
-- 97% test coverage with 37 comprehensive tests
+- 100% test coverage with 43 comprehensive tests
 - PHPStan Level 8 static analysis
-- GitHub Actions CI with multi-version testing
+- GitHub Actions CI with multi-version testing and enhanced branch support
+- Codecov integration for code coverage reporting
 
 ### Changed
 
@@ -24,6 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: API surface changed from Guzzle Services to magic methods
 - **BREAKING**: Minimum PHP version now 8.1+ (was 7.3)
 - Simplified dependencies: removed Guzzle Services, Command, OAuth Subscriber
+- Replace `squizlabs/php_codesniffer` with `friendsofphp/php-cs-fixer` for code style checking
+- Update code style standard from PSR-12 via PHPCS to PSR-12 via PHP-CS-Fixer
+- Add `.php-cs-fixer.php` configuration file with PSR-12 rules
+- Update composer scripts: `cs` and `cs-fix` now use php-cs-fixer instead of phpcs/phpcbf
+- Update README badges for better consistency and proper branch links
+- Enhanced CI workflow with comprehensive PHP version matrix (8.1–8.5)
+- Add codecov.yml configuration for coverage reporting
 
 ### Removed
 

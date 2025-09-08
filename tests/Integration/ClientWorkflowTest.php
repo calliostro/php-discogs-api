@@ -31,7 +31,7 @@ final class ClientWorkflowTest extends TestCase
 
     public function testCompleteWorkflowWithFactoryAndApiCalls(): void
     {
-        // Create mock handler with multiple responses
+        // Create a mock handler with multiple responses
         $mockHandler = new MockHandler([
             new Response(200, [], $this->jsonEncode(['id' => '108713', 'name' => 'Aphex Twin'])),
             new Response(200, [], $this->jsonEncode(['results' => [['title' => 'Selected Ambient Works']]])),
@@ -41,7 +41,7 @@ final class ClientWorkflowTest extends TestCase
         $handlerStack = HandlerStack::create($mockHandler);
         $guzzleClient = new Client(['handler' => $handlerStack]);
 
-        // Create client using factory with custom guzzle client
+        // Create a client using factory with a custom Guzzle client
         $client = new \Calliostro\Discogs\DiscogsApiClient($guzzleClient);
 
         // Test multiple API calls
@@ -74,7 +74,7 @@ final class ClientWorkflowTest extends TestCase
     {
         $client = ClientFactory::create();
 
-        // This will fail if service.php is not properly loaded
+        // This will fail if service.php is not properly loaded.
         // We use reflection to check the config was loaded
         $reflection = new \ReflectionClass($client);
         $configProperty = $reflection->getProperty('config');

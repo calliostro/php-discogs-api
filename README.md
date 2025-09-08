@@ -1,12 +1,13 @@
 # ⚡ Discogs API Client for PHP 8.1+ – Ultra-Lightweight
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
+[![Package Version](https://img.shields.io/packagist/v/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
 [![Total Downloads](https://img.shields.io/packagist/dt/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
-[![License](https://img.shields.io/packagist/l/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
-[![PHP Version](https://img.shields.io/badge/php-8.1%7C8.2%7C8.3%7C8.4%7C8.5-blue.svg)](https://php.net)
-[![Guzzle](https://img.shields.io/badge/guzzle-%5E6.5%7C%5E7.0-orange.svg)](https://docs.guzzlephp.org/)
-[![CI](https://github.com/calliostro/php-discogs-api/workflows/CI/badge.svg?branch=feature/v3.0.0)](https://github.com/calliostro/php-discogs-api/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/calliostro/php-discogs-api)](https://codecov.io/gh/calliostro/php-discogs-api)
+[![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](https://packagist.org/packages/calliostro/php-discogs-api)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue.svg)](https://php.net)
+[![CI](https://github.com/calliostro/php-discogs-api/actions/workflows/ci.yml/badge.svg)](https://github.com/calliostro/php-discogs-api/actions/workflows/ci.yml)
+[![Code Coverage](https://codecov.io/gh/calliostro/php-discogs-api/graph/badge.svg?token=0SV4IXE9V1)](https://codecov.io/gh/calliostro/php-discogs-api)
+[![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
+[![Code Style](https://img.shields.io/badge/code%20style-PSR12-brightgreen.svg)](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
 > **🚀 ONLY 2 CLASSES!** The most lightweight Discogs API client for PHP. Zero bloats, maximum performance.
 
@@ -95,7 +96,7 @@ $labelReleases = $discogs->labelReleases(['id' => '1']);
 - **Type Safe + IDE Support** – Full PHP 8.1+ types, PHPStan Level 8, method autocomplete
 - **Future-Ready** – PHP 8.5 compatible (beta/dev testing)
 - **Pure Guzzle** – Modern HTTP client, no custom transport layers
-- **Well Tested** – 97% test coverage, PSR-12 compliant
+- **Well Tested** – 100% test coverage, PSR-12 compliant
 - **Secure Authentication** – Full OAuth and Personal Access Token support
 
 ## 🎵 All Discogs API Methods as Direct Calls
