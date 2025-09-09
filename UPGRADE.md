@@ -9,16 +9,20 @@ v3.0 is a **complete rewrite** with an ultra-lightweight architecture. Every asp
 ## Requirements Changes
 
 ### PHP Version
-- **Before (v2.x)**: PHP 7.3+ 
+
+- **Before (v2.x)**: PHP 7.3+
 - **After (v3.0)**: PHP 8.1+ (strict requirement)
 
 ### Dependencies
+
 - **Before**: Guzzle Services, Command, OAuth Subscriber
 - **After**: Pure Guzzle HTTP client only
 
 ## Namespace Changes
 
 ```php
+<?php
+
 // OLD (v2.x)
 use Discogs\ClientFactory;
 use Discogs\DiscogsClient;
@@ -31,7 +35,10 @@ use Calliostro\Discogs\DiscogsApiClient;
 ## Client Creation
 
 ### Before (v2.x)
+
 ```php
+<?php
+
 use Discogs\ClientFactory;
 
 // Basic client
@@ -49,7 +56,10 @@ $client = ClientFactory::factory([
 ```
 
 ### After (v3.0)
+
 ```php
+<?php
+
 use Calliostro\Discogs\ClientFactory;
 
 // Anonymous client
@@ -65,7 +75,10 @@ $client = ClientFactory::createWithOAuth('token', 'secret', 'MyApp/1.0');
 ## API Method Calls
 
 ### Before (v2.x): Guzzle Services Commands
+
 ```php
+<?php
+
 // Search
 $results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
 
@@ -80,7 +93,10 @@ $inventory = $client->getInventory(['username' => 'user']);
 ```
 
 ### After (v3.0): Magic Method Calls
+
 ```php
+<?php
+
 // Search (same parameters, different method name)
 $results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
 
@@ -96,45 +112,57 @@ $inventory = $client->inventoryGet(['username' => 'user']);
 
 ## Method Name Mapping
 
-| v2.x Command                 | v3.0 Magic Method   | Parameters                  |
-|------------------------------|---------------------|-----------------------------|
-| `getArtist`                  | `artistGet`         | `['id' => 'string']`        |
-| `getArtistReleases`          | `artistReleases`    | `['id' => 'string']`        |
-| `getRelease`                 | `releaseGet`        | `['id' => 'string']`        |
-| `getMaster`                  | `masterGet`         | `['id' => 'string']`        |
-| `getMasterVersions`          | `masterVersions`    | `['id' => 'string']`        |
-| `getLabel`                   | `labelGet`          | `['id' => 'string']`        |
-| `getLabelReleases`           | `labelReleases`     | `['id' => 'string']`        |
-| `search`                     | `search`            | `['q' => 'string']`         |
-| `getOAuthIdentity`           | `identityGet`       | `[]`                        |
-| `getProfile`                 | `userGet`           | `['username' => 'string']`  |
-| `getCollectionFolders`       | `collectionFolders` | `['username' => 'string']`  |
-| `getCollectionFolder`        | `collectionFolder`  | `['username', 'folder_id']` |
-| `getCollectionItemsByFolder` | `collectionItems`   | `['username', 'folder_id']` |
-| `getInventory`               | `inventoryGet`      | `['username' => 'string']`  |
-| `getOrders`                  | `ordersGet`         | `[]`                        |
-| `getOrder`                   | `orderGet`          | `['order_id' => 'string']`  |
-| `createListing`              | `listingCreate`     | `[...]`                     |
-| `changeListing`              | `listingUpdate`     | `[...]`                     |
-| `deleteListing`              | `listingDelete`     | `[...]`                     |
+| v2.x Command                 | v3.0 Magic Method       | Parameters                  |
+|------------------------------|-------------------------|-----------------------------|
+| `getArtist`                  | `artistGet`             | `['id' => 'string']`        |
+| `getArtistReleases`          | `artistReleases`        | `['id' => 'string']`        |
+| `getRelease`                 | `releaseGet`            | `['id' => 'string']`        |
+| `getMaster`                  | `masterGet`             | `['id' => 'string']`        |
+| `getMasterVersions`          | `masterVersions`        | `['id' => 'string']`        |
+| `getLabel`                   | `labelGet`              | `['id' => 'string']`        |
+| `getLabelReleases`           | `labelReleases`         | `['id' => 'string']`        |
+| `search`                     | `search`                | `['q' => 'string']`         |
+| `getOAuthIdentity`           | `identityGet`           | `[]`                        |
+| `getProfile`                 | `userGet`               | `['username' => 'string']`  |
+| `getCollectionFolders`       | `collectionFolders`     | `['username' => 'string']`  |
+| `getCollectionFolder`        | `collectionFolderGet`   | `['username', 'folder_id']` |
+| `getCollectionItemsByFolder` | `collectionItems`       | `['username', 'folder_id']` |
+| `getInventory`               | `inventoryGet`          | `['username' => 'string']`  |
+| `addInventory`               | `inventoryUploadAdd`    | `[...]`                     |
+| `deleteInventory`            | `inventoryUploadDelete` | `[...]`                     |
+| `getOrder`                   | `orderGet`              | `['order_id' => 'string']`  |
+| `getOrders`                  | `ordersGet`             | `[]`                        |
+| `changeOrder`                | `orderUpdate`           | `[...]`                     |
+| `getOrderMessages`           | `orderMessages`         | `['order_id' => 'string']`  |
+| `addOrderMessage`            | `orderMessageAdd`       | `[...]`                     |
+| `createListing`              | `listingCreate`         | `[...]`                     |
+| `changeListing`              | `listingUpdate`         | `[...]`                     |
+| `deleteListing`              | `listingDelete`         | `[...]`                     |
+| `getUserLists`               | `userLists`             | `['username' => 'string']`  |
+| `getLists`                   | `listGet`               | `['list_id' => 'string']`   |
+| `getWantlist`                | `wantlistGet`           | `['username' => 'string']`  |
 
 ## Configuration Changes
 
 ### Service Configuration
+
 - **Before**: Complex Guzzle Services YAML/JSON definitions
 - **After**: Simple PHP array in `resources/service.php`
 
-### Throttling 
+### Throttling
+
 - **Before**: `ThrottleSubscriber` with Guzzle middlewares
 - **After**: Handle rate limiting in your application layer
 
 ### Error Handling
+
 - **Before**: Guzzle Services exceptions
 - **After**: Standard `RuntimeException` with clear messages
 
 ## Testing Your Migration
 
 1. **Update composer.json**:
+
    ```json
    {
        "require": {

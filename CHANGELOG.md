@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [3.0.1](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.1) – 2025-09-09
+
+### Added
+
+- Complete PHPDoc coverage for all 62 Discogs API endpoints
+- Missing @method annotations for 22 additional API methods
+- Full IDE autocomplete support for inventory, collection, and marketplace operations
+
+### Fixed
+
+- Incorrect legacy method mappings in UPGRADE guide
+- Missing PHPDoc annotations causing incomplete IDE support
+- PSR-12 compliance issues in documentation examples
+- Broken `collectionFolder()` method annotation (replaced with working `collectionFolderGet()`)
+
+### Documentation
+
+- Updated README with accurate API coverage information
+- Enhanced code examples with proper formatting standards
+- Collection folder management methods are now properly documented
+
 ## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-08
 
 ### Added

@@ -1,6 +1,6 @@
 {
     "name": "calliostro/php-discogs-api",
-    "description": "Ultra-lightweight Discogs API client for PHP 8.1+ — Complete API coverage, minimal dependencies",
+    "description": "Ultra-lightweight Discogs API client for PHP 8.1+ with modern Guzzle-based implementation — Only two classes, service descriptions, zero bloat",
     "type": "library",
     "keywords": [
         "php",
