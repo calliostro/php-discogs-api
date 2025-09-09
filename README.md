@@ -4,6 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
 [![License](https://poser.pugx.org/calliostro/php-discogs-api/license)](https://packagist.org/packages/calliostro/php-discogs-api)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue.svg)](https://php.net)
+[![Guzzle](https://img.shields.io/badge/guzzle-%5E6.5%7C%5E7.0-orange.svg)](https://docs.guzzlephp.org/)
 [![CI](https://github.com/calliostro/php-discogs-api/actions/workflows/ci.yml/badge.svg)](https://github.com/calliostro/php-discogs-api/actions/workflows/ci.yml)
 [![Code Coverage](https://codecov.io/gh/calliostro/php-discogs-api/graph/badge.svg?token=0SV4IXE9V1)](https://codecov.io/gh/calliostro/php-discogs-api)
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
@@ -54,11 +55,27 @@ echo "Release: " . $release['title'] . "\n";
 
 ```php
 // Authenticated client for protected operations
-$discogs = ClientFactory::createWithToken('your-personal-access-token');
+$discogs = ClientFactory::createWithToken('your-personal-access-token', 'MyApp/1.0');
 
-// Access your collection
+// Collection management
 $folders = $discogs->collectionFolders(['username' => 'your-username']);
+$folder = $discogs->collectionFolderGet(['username' => 'your-username', 'folder_id' => '1']);
 $items = $discogs->collectionItems(['username' => 'your-username', 'folder_id' => '0']);
+
+// Add release to a collection
+$addResult = $discogs->collectionAddRelease([
+    'username' => 'your-username',
+    'folder_id' => '1', 
+    'release_id' => '249504'
+]);
+
+// Wantlist management
+$wantlist = $discogs->wantlistGet(['username' => 'your-username']);
+$addToWantlist = $discogs->wantlistAdd([
+    'username' => 'your-username',
+    'release_id' => '249504',
+    'notes' => 'Looking for mint condition'
+]);
 
 // Marketplace operations
 $inventory = $discogs->inventoryGet(['username' => 'your-username']);
@@ -68,7 +85,9 @@ $orders = $discogs->ordersGet(['status' => 'Shipped']);
 $listing = $discogs->listingCreate([
     'release_id' => '249504',
     'condition' => 'Near Mint (NM or M-)',
-    'price' => '25.00'
+    'sleeve_condition' => 'Very Good Plus (VG+)',
+    'price' => '25.00',
+    'status' => 'For Sale'
 ]);
 ```
 
@@ -91,7 +110,7 @@ $labelReleases = $discogs->labelReleases(['id' => '1']);
 ## ✨ Key Features
 
 - **Ultra-Lightweight** – Only 2 classes, ~234 lines of logic + service descriptions
-- **Complete API Coverage** – All 65+ Discogs API endpoints supported
+- **Complete API Coverage** – All 60+ Discogs API endpoints supported
 - **Direct API Calls** – `$client->artistGet()` maps to `/artists/{id}`, no abstractions
 - **Type Safe + IDE Support** – Full PHP 8.1+ types, PHPStan Level 8, method autocomplete
 - **Future-Ready** – PHP 8.5 compatible (beta/dev testing)
@@ -101,16 +120,17 @@ $labelReleases = $discogs->labelReleases(['id' => '1']);
 
 ## 🎵 All Discogs API Methods as Direct Calls
 
-- **Database Methods** – search(), artistGet(), releaseGet(), masterGet(), labelGet()
-- **Collection Methods** – collectionFolders(), collectionItems(), collectionFolder()
-- **Wantlist Methods** – wantlistGet()
-- **Marketplace Methods** – inventoryGet(), listingCreate(), listingUpdate(), listingDelete()
-- **Order Methods** – ordersGet(), orderGet(), orderUpdate(), orderMessages()
-- **User Methods** – identityGet(), userGet()
-- **Master Methods** – masterVersions()
-- **Label Methods** – labelReleases()
+- **Database Methods** – search(), artistGet(), artistReleases(), releaseGet(), releaseRatingGet(), releaseRatingPut(), releaseRatingDelete(), releaseRatingCommunity(), releaseStats(), masterGet(), masterVersions(), labelGet(), labelReleases()
+- **User Identity Methods** – identityGet(), userGet(), userEdit(), userSubmissions(), userContributions(), userLists()
+- **Collection Methods** – collectionFolders(), collectionFolderGet(), collectionFolderCreate(), collectionFolderEdit(), collectionFolderDelete(), collectionItems(), collectionItemsByRelease(), collectionAddRelease(), collectionEditRelease(), collectionRemoveRelease(), collectionCustomFields(), collectionEditField(), collectionValue()
+- **Wantlist Methods** – wantlistGet(), wantlistAdd(), wantlistEdit(), wantlistRemove()
+- **Marketplace Methods** – inventoryGet(), listingGet(), listingCreate(), listingUpdate(), listingDelete(), marketplaceFee(), marketplaceFeeCurrency(), marketplacePriceSuggestions(), marketplaceStats()
+- **Order Methods** – orderGet(), ordersGet(), orderUpdate(), orderMessages(), orderMessageAdd()
+- **Inventory Export Methods** – inventoryExportCreate(), inventoryExportList(), inventoryExportGet(), inventoryExportDownload()
+- **Inventory Upload Methods** – inventoryUploadAdd(), inventoryUploadChange(), inventoryUploadDelete(), inventoryUploadList(), inventoryUploadGet()
+- **List Methods** – listGet()
 
-*All 65+ Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
+*All 60+ Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
 
 ## 📋 Requirements
 
