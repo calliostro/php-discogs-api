@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Incorrect legacy method mappings in UPGRADE guide
 - Missing PHPDoc annotations causing incomplete IDE support
 - PSR-12 compliance issues in documentation examples
+- Broken `collectionFolder()` method annotation (replaced with working `collectionFolderGet()`)
 
 ### Documentation
 

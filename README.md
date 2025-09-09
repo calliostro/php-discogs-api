@@ -264,7 +264,7 @@ For complete API documentation including all available parameters, visit the [Di
 
 - `collectionFolders($params)` – Get user's collection folders
 - `collectionItems($params)` – Get collection items by folder
-- `collectionFolder($params)` – Get specific collection folder
+- `collectionFolderGet($params)` – Get specific collection folder
 
 #### User Methods
 
