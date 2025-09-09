@@ -21,6 +21,8 @@ v3.0 is a **complete rewrite** with an ultra-lightweight architecture. Every asp
 ## Namespace Changes
 
 ```php
+<?php
+
 // OLD (v2.x)
 use Discogs\ClientFactory;
 use Discogs\DiscogsClient;
@@ -35,6 +37,8 @@ use Calliostro\Discogs\DiscogsApiClient;
 ### Before (v2.x)
 
 ```php
+<?php
+
 use Discogs\ClientFactory;
 
 // Basic client
@@ -54,6 +58,8 @@ $client = ClientFactory::factory([
 ### After (v3.0)
 
 ```php
+<?php
+
 use Calliostro\Discogs\ClientFactory;
 
 // Anonymous client
@@ -71,6 +77,8 @@ $client = ClientFactory::createWithOAuth('token', 'secret', 'MyApp/1.0');
 ### Before (v2.x): Guzzle Services Commands
 
 ```php
+<?php
+
 // Search
 $results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
 
@@ -87,6 +95,8 @@ $inventory = $client->getInventory(['username' => 'user']);
 ### After (v3.0): Magic Method Calls
 
 ```php
+<?php
+
 // Search (same parameters, different method name)
 $results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
 

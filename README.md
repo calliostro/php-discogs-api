@@ -54,6 +54,8 @@ echo "Release: " . $release['title'] . "\n";
 ### Collection and Marketplace
 
 ```php
+<?php
+
 // Authenticated client for protected operations
 $discogs = ClientFactory::createWithToken('your-personal-access-token', 'MyApp/1.0');
 
@@ -94,6 +96,8 @@ $listing = $discogs->listingCreate([
 ### Database Search and Discovery
 
 ```php
+<?php
+
 // Search the Discogs database
 $results = $discogs->search(['q' => 'Pink Floyd', 'type' => 'artist']);
 $releases = $discogs->artistReleases(['id' => '45031', 'sort' => 'year']);
@@ -144,6 +148,8 @@ $labelReleases = $discogs->labelReleases(['id' => '1']);
 For basic customizations like timeout or User-Agent, use the ClientFactory:
 
 ```php
+<?php
+
 use Calliostro\Discogs\ClientFactory;
 
 $discogs = ClientFactory::create('MyApp/1.0 (+https://myapp.com)', [
@@ -159,6 +165,8 @@ $discogs = ClientFactory::create('MyApp/1.0 (+https://myapp.com)', [
 For advanced HTTP client features (middleware, interceptors, etc.), create your own Guzzle client:
 
 ```php
+<?php
+
 use GuzzleHttp\Client;
 use Calliostro\Discogs\DiscogsApiClient;
 
