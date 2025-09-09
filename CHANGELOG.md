@@ -11,53 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Complete PHPDoc coverage for all API endpoints in `DiscogsApiClient`
-- Missing @method annotations for 22 additional API methods:
-  - `releaseRatingCommunity()` – Get community release ratings
-  - `releaseStats()` – Get release statistics  
-  - `userSubmissions()` – Get user submissions
-  - `userContributions()` – Get user contributions
-  - `userLists()` – Get user lists
-  - `collectionFolderGet()` – Get specific collection folder
-  - `collectionFolderCreate()` – Create collection folder
-  - `collectionFolderEdit()` – Edit collection folder  
-  - `collectionFolderDelete()` – Delete collection folder
-  - `collectionItemsByRelease()` – Get collection items by release
-  - `collectionAddRelease()` – Add release to a collection
-  - `collectionEditRelease()` – Edit release in a collection
-  - `collectionRemoveRelease()` – Remove release from a collection
-  - `collectionCustomFields()` – Get custom collection fields
-  - `collectionEditField()` – Edit custom collection field
-  - `collectionValue()` – Get collection value
-  - `wantlistAdd()` – Add to wantlist
-  - `wantlistEdit()` – Edit wantlist entry
-  - `wantlistRemove()` – Remove from wantlist
-  - `marketplaceFeeCurrency()` – Calculate fee with specific currency
-  - `marketplacePriceSuggestions()` – Get price suggestions
-  - `marketplaceStats()` – Get marketplace statistics
-- PHPDoc for complete Inventory Export API (five methods)
-- PHPDoc for complete Inventory Upload API (five methods)  
-- `listGet()` method for retrieving specific lists
-
-### Changed
-
-- Improved PHPDoc structure with logical API groupings
-- Better IDE autocomplete support for all available methods
-- More comprehensive method documentation with proper Discogs API links
+- Complete PHPDoc coverage for all 62 Discogs API endpoints
+- Missing @method annotations for 22 additional API methods
+- Full IDE autocomplete support for inventory, collection, and marketplace operations
 
 ### Fixed
 
-- Missing method visibility for inventory management operations
-- Incomplete API coverage documentation
-- Incorrect legacy method mappings in `UPGRADE.md`
-- PHP-CS-Fixer false positive warnings for @method annotations
+- Incorrect legacy method mappings in UPGRADE guide
+- Missing PHPDoc annotations causing incomplete IDE support
+- PSR-12 compliance issues in documentation examples
 
 ### Documentation
 
-- Added Guzzle HTTP client badge to README
-- Updated README with an accurate API endpoint count (60+ methods)
-- Corrected v2.x legacy method mapping table in the UPGRADE guide
-- Enhanced README with expanded API method categorization
+- Updated README with accurate API coverage information
+- Enhanced code examples with proper formatting standards
 - Collection folder management methods are now properly documented
 
 ## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-08
