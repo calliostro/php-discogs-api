@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [3.0.1](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.1) – 2025-09-09
+
+### Added
+
+- Complete PHPDoc coverage for all API endpoints in `DiscogsApiClient`
+- Missing @method annotations for 22 additional API methods:
+  - `releaseRatingCommunity()` – Get community release ratings
+  - `releaseStats()` – Get release statistics  
+  - `userSubmissions()` – Get user submissions
+  - `userContributions()` – Get user contributions
+  - `userLists()` – Get user lists
+  - `collectionFolderGet()` – Get specific collection folder
+  - `collectionFolderCreate()` – Create collection folder
+  - `collectionFolderEdit()` – Edit collection folder  
+  - `collectionFolderDelete()` – Delete collection folder
+  - `collectionItemsByRelease()` – Get collection items by release
+  - `collectionAddRelease()` – Add release to collection
+  - `collectionEditRelease()` – Edit release in collection
+  - `collectionRemoveRelease()` – Remove release from collection
+  - `collectionCustomFields()` – Get custom collection fields
+  - `collectionEditField()` – Edit custom collection field
+  - `collectionValue()` – Get collection value
+  - `wantlistAdd()` – Add to wantlist
+  - `wantlistEdit()` – Edit wantlist entry
+  - `wantlistRemove()` – Remove from wantlist
+  - `marketplaceFeeCurrency()` – Calculate fee with specific currency
+  - `marketplacePriceSuggestions()` – Get price suggestions
+  - `marketplaceStats()` – Get marketplace statistics
+- PHPDoc for complete Inventory Export API (5 methods)
+- PHPDoc for complete Inventory Upload API (5 methods)  
+- `listGet()` method for retrieving specific lists
+
+### Changed
+
+- Improved PHPDoc structure with logical API groupings
+- Better IDE autocomplete support for all available methods
+- More comprehensive method documentation with proper Discogs API links
+
+### Fixed
+
+- Missing method visibility for inventory management operations
+- Incomplete API coverage documentation
+- Collection folder management methods now properly documented
+
 ## [3.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.0) – 2025-09-08
 
 ### Added
