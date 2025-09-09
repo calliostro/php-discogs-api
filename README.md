@@ -10,7 +10,7 @@
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
 [![Code Style](https://img.shields.io/badge/code%20style-PSR12-brightgreen.svg)](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
-> **🚀 ONLY 2 CLASSES!** The most lightweight Discogs API client for PHP. Zero bloats, maximum performance.
+> **🚀 ONLY 2 CLASSES!** The most lightweight Discogs API client for PHP. Zero bloat, maximum performance.
 
 An **ultra-minimalist** Discogs API client that proves you don't need 20+ classes to build a great API client. Built with modern PHP 8.1+ features, service descriptions, and powered by Guzzle.
 
