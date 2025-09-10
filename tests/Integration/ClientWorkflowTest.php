@@ -9,7 +9,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Integration tests for the complete client workflow
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Calliostro\Discogs\ClientFactory
  * @covers \Calliostro\Discogs\DiscogsApiClient
  */
-final class ClientWorkflowTest extends TestCase
+final class ClientWorkflowTest extends IntegrationTestCase
 {
     /**
      * Helper method to safely encode JSON for Response body
@@ -45,13 +44,13 @@ final class ClientWorkflowTest extends TestCase
         $client = new \Calliostro\Discogs\DiscogsApiClient($guzzleClient);
 
         // Test multiple API calls
-        $artist = $client->artistGet(['id' => '108713']);
+        $artist = $client->getArtist(['id' => '108713']);
         $this->assertEquals('Aphex Twin', $artist['name']);
 
         $search = $client->search(['q' => 'Aphex Twin', 'type' => 'artist']);
         $this->assertArrayHasKey('results', $search);
 
-        $label = $client->labelGet(['id' => '1']);
+        $label = $client->getLabel(['id' => '1']);
         $this->assertEquals('Warp Records', $label['name']);
     }
 
@@ -62,12 +61,8 @@ final class ClientWorkflowTest extends TestCase
         $this->assertInstanceOf(\Calliostro\Discogs\DiscogsApiClient::class, $client1);
 
         // Test OAuth factory method
-        $client2 = ClientFactory::createWithOAuth('token', 'secret');
+        $client2 = ClientFactory::createWithOAuth('consumer_key', 'consumer_secret', 'token', 'token_secret');
         $this->assertInstanceOf(\Calliostro\Discogs\DiscogsApiClient::class, $client2);
-
-        // Test token factory method
-        $client3 = ClientFactory::createWithToken('personal_token');
-        $this->assertInstanceOf(\Calliostro\Discogs\DiscogsApiClient::class, $client3);
     }
 
     public function testServiceConfigurationIsLoaded(): void
@@ -83,7 +78,7 @@ final class ClientWorkflowTest extends TestCase
 
         $this->assertIsArray($config);
         $this->assertArrayHasKey('operations', $config);
-        $this->assertArrayHasKey('artist.get', $config['operations']);
+        $this->assertArrayHasKey('getArtist', $config['operations']); // v4.0 uses camelCase
         $this->assertArrayHasKey('search', $config['operations']);
     }
 
@@ -101,12 +96,12 @@ final class ClientWorkflowTest extends TestCase
         $method = $reflection->getMethod('convertMethodToOperation');
         $method->setAccessible(true);
 
-        // Test various conversions
-        $this->assertEquals('artist.get', $method->invokeArgs($client, ['artistGet']));
-        $this->assertEquals('artist.releases', $method->invokeArgs($client, ['artistReleases']));
-        $this->assertEquals('collection.folders', $method->invokeArgs($client, ['collectionFolders']));
-        $this->assertEquals('order.messages', $method->invokeArgs($client, ['orderMessages']));
-        $this->assertEquals('order.message.add', $method->invokeArgs($client, ['orderMessageAdd']));
+        // Test v4.0 conversions - no conversion, direct mapping
+        $this->assertEquals('artistGet', $method->invokeArgs($client, ['artistGet']));
+        $this->assertEquals('artistReleases', $method->invokeArgs($client, ['artistReleases']));
+        $this->assertEquals('collectionFolders', $method->invokeArgs($client, ['collectionFolders']));
+        $this->assertEquals('orderMessages', $method->invokeArgs($client, ['orderMessages']));
+        $this->assertEquals('orderMessageAdd', $method->invokeArgs($client, ['orderMessageAdd']));
     }
 
     public function testUriBuilding(): void
@@ -150,6 +145,6 @@ final class ClientWorkflowTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Artist not found');
 
-        $client->artistGet(['id' => '999999']);
+        $client->getArtist(['id' => '999999']);
     }
 }

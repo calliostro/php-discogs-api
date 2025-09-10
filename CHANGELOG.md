@@ -5,13 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0-beta.1](https://github.com/calliostro/php-discogs-api/releases/tag/v4.0.0-beta.1) – 2025-09-10
+
+### Added
+
+- **RFC 5849 compliant OAuth 1.0a** implementation with PLAINTEXT signatures
+- **Integration tests** for authentication validation  
+- **Static header authentication** replacing complex middleware
+- **Complete OAuth 1.0a Support** with dedicated `OAuthHelper` class
+- **Consistent Method Naming** following `get*()`, `list*()`, `create*()`, `update*()`, `delete*()` patterns
+- **Performance optimizations** with config caching and reduced file I/O
+- **Enhanced Security** with cryptographically secure nonce generation and ReDoS protection
+- **CI/CD Integration** with automatic rate limiting and retry logic for integration tests
+
+### Changed
+
+- **BREAKING**: Authentication completely rewritten – now secure and RFC-compliant
+- **BREAKING**: All method names changed for consistency (see UPGRADE.md)
+- **Enhanced**: User headers preserved but authentication headers protected from override
+- **Enhanced**: HTTP exceptions now pass through unchanged for better error transparency
+- **Enhanced**: Improved input validation with ReDoS attack prevention
+
+### Removed
+
+- **BREAKING**: No backward compatibility with v3.x method names
+
+### Migration
+
+- See [UPGRADE.md](UPGRADE.md) for a complete migration guide with method mapping tables
+- **Parameters, Authentication, Return Values**: All unchanged
+
+---
+
+## [3.1.0](https://github.com/calliostro/php-discogs-api/releases/tag/v3.1.0) – 2025-09-09
+
+### Added
+
+- **OAuth 1.0a Helper Methods** – Complete OAuth flow support with a separate OAuthHelper class
+  - `getRequestToken()` – Get temporary request token for authorization flow
+  - `getAuthorizationUrl()` – Generate user authorization URL
+  - `getAccessToken()` – Exchange request token for permanent access token
+- **Clean Authentication API** – Dedicated methods for different authentication types
+  - `createWithPersonalAccessToken()` – Clean 3-parameter method for Personal Access Tokens
+  - `createWithOAuth()` – Refined 4-parameter method for OAuth 1.0a tokens only
+- **Enhanced OAuth Documentation** – Comprehensive OAuth workflow examples and security best practices
+- **OAuth Unit Tests** – Full test coverage for new OAuth helper methods and authentication methods
+
+### Changed
+
+- **BREAKING**: ClientFactory methods now accept array|GuzzleClient parameters (following LastFm pattern)
+- **Authentication API Redesign** – Cleaner separation between Personal Access Token and OAuth 1.0a authentication
+- Updated all default User-Agent strings to version `3.1.0`
+- Enhanced OAuth client creation with a proper PLAINTEXT signature method
+- Documentation restructured for better usability
+
+### Fixed
+
+- OAuth request token method now uses a proper HTTP method (GET instead of POST)
+- OAuth signature generation follows Discogs API requirements exactly
+- PHPStan Level 8 compatibility with proper type annotations for OAuth responses
 
 ## [3.0.1](https://github.com/calliostro/php-discogs-api/releases/tag/v3.0.1) – 2025-09-09
 
 ### Added
 
-- Complete PHPDoc coverage for all 62 Discogs API endpoints
+- Complete PHPDoc coverage for all 60 Discogs API endpoints
 - Missing @method annotations for 22 additional API methods
 - Full IDE autocomplete support for inventory, collection, and marketplace operations
 
@@ -34,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ultra-lightweight 2-class architecture: `ClientFactory` and `DiscogsApiClient`
 - Magic method API calls: `$client->artistGet(['id' => '108713'])`
-- Complete API coverage: 65+ endpoints across all Discogs areas
+- Complete API coverage: 60 endpoints across all Discogs areas
 - Multiple authentication methods: OAuth, Personal Token, or anonymous
 - Modern PHP 8.1–8.5 support with strict typing
 - 100% test coverage with 43 comprehensive tests

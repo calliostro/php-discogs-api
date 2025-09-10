@@ -10,9 +10,7 @@
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
 [![Code Style](https://img.shields.io/badge/code%20style-PSR12-brightgreen.svg)](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
-> **🚀 ONLY 2 CLASSES!** The most lightweight Discogs API client for PHP. Zero bloat, maximum performance.
-
-An **ultra-minimalist** Discogs API client that proves you don't need 20+ classes to build a great API client. Built with modern PHP 8.1+ features, service descriptions, and powered by Guzzle.
+> **🚀 ULTRA-LIGHTWEIGHT!** Zero bloat, maximum performance Discogs API client powered by Guzzle.
 
 ## 📦 Installation
 
@@ -20,102 +18,46 @@ An **ultra-minimalist** Discogs API client that proves you don't need 20+ classe
 composer require calliostro/php-discogs-api
 ```
 
-**Important:** You need to [register your application](https://www.discogs.com/settings/developers) at Discogs to get your credentials. For read-only access to public data, no authentication is required.
+### Do You Need to Register?
+
+**For basic database access (artists, releases, labels):** No registration needed
+
+- Install and start using basic endpoints immediately
+
+**For search and user features:** Registration required
+
+- [Register your application](https://www.discogs.com/settings/developers) at Discogs to get credentials
+- Needed for: search, collections, wantlists, marketplace features
+
+### Symfony Integration
 
 **Symfony Users:** For easier integration, there's also a [Symfony Bundle](https://github.com/calliostro/discogs-bundle) available.
 
 ## 🚀 Quick Start
 
-### Basic Usage
-
 ```php
-<?php
-
-require __DIR__ . '/vendor/autoload.php';
-
-use Calliostro\Discogs\ClientFactory;
-
-// Basic client for public data
+// Public data (no registration needed)
 $discogs = ClientFactory::create();
+$artist = $discogs->getArtist(['id' => '1']);
 
-// Fetch artist information
-$artist = $discogs->artistGet([
-    'id' => '45031' // Pink Floyd
-]);
+// Search (consumer credentials)
+$discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
+$results = $discogs->search(['q' => 'Daft Punk']);
 
-$release = $discogs->releaseGet([
-    'id' => '249504' // Nirvana - Nevermind
-]);
+// Your collections (personal token)  
+$discogs = ClientFactory::createWithPersonalAccessToken('key', 'secret', 'token');
+$collection = $discogs->listCollectionFolders(['username' => 'you']);
 
-echo "Artist: " . $artist['name'] . "\n";
-echo "Release: " . $release['title'] . "\n";
-```
-
-### Collection and Marketplace
-
-```php
-<?php
-
-// Authenticated client for protected operations
-$discogs = ClientFactory::createWithToken('your-personal-access-token', 'MyApp/1.0');
-
-// Collection management
-$folders = $discogs->collectionFolders(['username' => 'your-username']);
-$folder = $discogs->collectionFolderGet(['username' => 'your-username', 'folder_id' => '1']);
-$items = $discogs->collectionItems(['username' => 'your-username', 'folder_id' => '0']);
-
-// Add release to a collection
-$addResult = $discogs->collectionAddRelease([
-    'username' => 'your-username',
-    'folder_id' => '1', 
-    'release_id' => '249504'
-]);
-
-// Wantlist management
-$wantlist = $discogs->wantlistGet(['username' => 'your-username']);
-$addToWantlist = $discogs->wantlistAdd([
-    'username' => 'your-username',
-    'release_id' => '249504',
-    'notes' => 'Looking for mint condition'
-]);
-
-// Marketplace operations
-$inventory = $discogs->inventoryGet(['username' => 'your-username']);
-$orders = $discogs->ordersGet(['status' => 'Shipped']);
-
-// Create a marketplace listing
-$listing = $discogs->listingCreate([
-    'release_id' => '249504',
-    'condition' => 'Near Mint (NM or M-)',
-    'sleeve_condition' => 'Very Good Plus (VG+)',
-    'price' => '25.00',
-    'status' => 'For Sale'
-]);
-```
-
-### Database Search and Discovery
-
-```php
-<?php
-
-// Search the Discogs database
-$results = $discogs->search(['q' => 'Pink Floyd', 'type' => 'artist']);
-$releases = $discogs->artistReleases(['id' => '45031', 'sort' => 'year']);
-
-// Master release versions
-$master = $discogs->masterGet(['id' => '18512']);
-$versions = $discogs->masterVersions(['id' => '18512']);
-
-// Label information
-$label = $discogs->labelGet(['id' => '1']); // Warp Records
-$labelReleases = $discogs->labelReleases(['id' => '1']);
+// Multi-user apps (OAuth)
+$discogs = ClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
+$identity = $discogs->getIdentity();
 ```
 
 ## ✨ Key Features
 
-- **Ultra-Lightweight** – Only 2 classes, ~234 lines of logic + service descriptions
-- **Complete API Coverage** – All 60+ Discogs API endpoints supported
-- **Direct API Calls** – `$client->artistGet()` maps to `/artists/{id}`, no abstractions
+- **Ultra-Lightweight** – Minimal dependencies, simple architecture
+- **Complete API Coverage** – All 60 Discogs API endpoints supported
+- **Direct API Calls** – `$client->getArtist()` maps to `/artists/{id}`, no abstractions
 - **Type Safe + IDE Support** – Full PHP 8.1+ types, PHPStan Level 8, method autocomplete
 - **Future-Ready** – PHP 8.5 compatible (beta/dev testing)
 - **Pure Guzzle** – Modern HTTP client, no custom transport layers
@@ -124,35 +66,34 @@ $labelReleases = $discogs->labelReleases(['id' => '1']);
 
 ## 🎵 All Discogs API Methods as Direct Calls
 
-- **Database Methods** – search(), artistGet(), artistReleases(), releaseGet(), releaseRatingGet(), releaseRatingPut(), releaseRatingDelete(), releaseRatingCommunity(), releaseStats(), masterGet(), masterVersions(), labelGet(), labelReleases()
-- **User Identity Methods** – identityGet(), userGet(), userEdit(), userSubmissions(), userContributions(), userLists()
-- **Collection Methods** – collectionFolders(), collectionFolderGet(), collectionFolderCreate(), collectionFolderEdit(), collectionFolderDelete(), collectionItems(), collectionItemsByRelease(), collectionAddRelease(), collectionEditRelease(), collectionRemoveRelease(), collectionCustomFields(), collectionEditField(), collectionValue()
-- **Wantlist Methods** – wantlistGet(), wantlistAdd(), wantlistEdit(), wantlistRemove()
-- **Marketplace Methods** – inventoryGet(), listingGet(), listingCreate(), listingUpdate(), listingDelete(), marketplaceFee(), marketplaceFeeCurrency(), marketplacePriceSuggestions(), marketplaceStats()
-- **Order Methods** – orderGet(), ordersGet(), orderUpdate(), orderMessages(), orderMessageAdd()
-- **Inventory Export Methods** – inventoryExportCreate(), inventoryExportList(), inventoryExportGet(), inventoryExportDownload()
-- **Inventory Upload Methods** – inventoryUploadAdd(), inventoryUploadChange(), inventoryUploadDelete(), inventoryUploadList(), inventoryUploadGet()
-- **List Methods** – listGet()
+- **Database Methods** – search(), getArtist(), listArtistReleases(), getRelease(), updateUserReleaseRating(), deleteUserReleaseRating(), getUserReleaseRating(), getCommunityReleaseRating(), getReleaseStats(), getMaster(), listMasterVersions(), getLabel(), listLabelReleases()
+- **Marketplace Methods** – getUserInventory(), getMarketplaceListing(), createMarketplaceListing(), updateMarketplaceListing(), deleteMarketplaceListing(), getMarketplaceFee(), getMarketplaceFeeByCurrency(), getMarketplacePriceSuggestions(), getMarketplaceStats(), getMarketplaceOrder(), getMarketplaceOrders(), updateMarketplaceOrder(), getMarketplaceOrderMessages(), addMarketplaceOrderMessage()
+- **Inventory Export Methods** – createInventoryExport(), listInventoryExports(), getInventoryExport(), downloadInventoryExport()
+- **Inventory Upload Methods** – addInventoryUpload(), changeInventoryUpload(), deleteInventoryUpload(), listInventoryUploads(), getInventoryUpload()
+- **User Identity Methods** – getIdentity(), getUser(), updateUser(), listUserSubmissions(), listUserContributions()
+- **User Collection Methods** – listCollectionFolders(), getCollectionFolder(), createCollectionFolder(), updateCollectionFolder(), deleteCollectionFolder(), listCollectionItems(), getCollectionItemsByRelease(), addToCollection(), updateCollectionItem(), removeFromCollection(), getCustomFields(), setCustomFields(), getCollectionValue()
+- **User Wantlist Methods** – getUserWantlist(), addToWantlist(), updateWantlistItem(), removeFromWantlist()
+- **User Lists Methods** – getUserLists(), getUserList()
 
-*All 60+ Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
+*All 60 Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
+
+> 💡 **Note:** Some endpoints require special permissions (seller accounts, data ownership).
 
 ## 📋 Requirements
 
 - **php** ^8.1
 - **guzzlehttp/guzzle** ^6.5 || ^7.0
 
-## 🔧 Advanced Configuration
+## ⚙️ Advanced Configuration
 
 ### Option 1: Simple Configuration (Recommended)
 
 For basic customizations like timeout or User-Agent, use the ClientFactory:
 
 ```php
-<?php
-
 use Calliostro\Discogs\ClientFactory;
 
-$discogs = ClientFactory::create('MyApp/1.0 (+https://myapp.com)', [
+$discogs = ClientFactory::create([
     'timeout' => 30,
     'headers' => [
         'User-Agent' => 'MyApp/1.0 (+https://myapp.com)',
@@ -165,12 +106,11 @@ $discogs = ClientFactory::create('MyApp/1.0 (+https://myapp.com)', [
 For advanced HTTP client features (middleware, interceptors, etc.), create your own Guzzle client:
 
 ```php
-<?php
-
 use GuzzleHttp\Client;
 use Calliostro\Discogs\DiscogsApiClient;
 
 $httpClient = new Client([
+    'base_uri' => 'https://api.discogs.com/',
     'timeout' => 30,
     'connect_timeout' => 10,
     'headers' => [
@@ -182,48 +122,102 @@ $httpClient = new Client([
 $discogs = new DiscogsApiClient($httpClient);
 
 // Or via ClientFactory
-$discogs = ClientFactory::create('MyApp/1.0', $httpClient);
+$discogs = ClientFactory::create($httpClient);
 ```
 
-> **💡 Note:** By default, the client uses `DiscogsClient/3.0 (+https://github.com/calliostro/php-discogs-api)` as User-Agent. You can override this by setting custom headers as shown above.
+> 💡 **Note:** By default, the client uses `DiscogsClient/4.0.0 +https://github.com/calliostro/php-discogs-api` as User-Agent. You can override this by setting custom headers as shown above.
 
 ## 🔐 Authentication
 
-Discogs supports different authentication flows:
+Get credentials at [Discogs Developer Settings](https://www.discogs.com/settings/developers).
 
-### Personal Access Token (Recommended)
+### Quick Reference
 
-For accessing your own account data, use a Personal Access Token from [Discogs Developer Settings](https://www.discogs.com/settings/developers):
+| Level | Method                            | Credentials Needed | Access                                  |
+|-------|-----------------------------------|--------------------|-----------------------------------------|
+| 1️⃣   | `create()`                        | None               | Public data (artists, releases, labels) |
+| 2️⃣   | `createWithConsumerCredentials()` | App key + secret   | + Database search                       |
+| 3️⃣   | `createWithPersonalAccessToken()` | + Personal token   | + Your collections/wantlist             |
+| 4️⃣   | `createWithOAuth()`               | + OAuth tokens     | + Act for other users                   |
+
+### Implementation
+
+```php
+// Level 1: Public data only
+$discogs = ClientFactory::create();
+
+// Level 2: Search enabled
+$discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
+$results = $discogs->search(['q' => 'Taylor Swift']);
+
+// Level 3: Your account access (most common)
+$discogs = ClientFactory::createWithPersonalAccessToken('key', 'secret', 'token');
+$folders = $discogs->listCollectionFolders(['username' => 'you']);
+$wantlist = $discogs->getUserWantlist(['username' => 'you']);
+
+// Level 4: Multi-user apps
+$discogs = ClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
+```
+
+### Complete OAuth Flow Example
+
+**Step 1: authorize.php** - Redirect user to Discogs
 
 ```php
 <?php
+// authorize.php
+
+use Calliostro\Discogs\OAuthHelper;
+
+$consumerKey = 'your-consumer-key';
+$consumerSecret = 'your-consumer-secret';
+$callbackUrl = 'https://yourapp.com/callback.php';
+
+$oauth = new OAuthHelper();
+$requestToken = $oauth->getRequestToken($consumerKey, $consumerSecret, $callbackUrl);
+
+$_SESSION['oauth_token'] = $requestToken['oauth_token'];
+$_SESSION['oauth_token_secret'] = $requestToken['oauth_token_secret'];
+
+$authUrl = $oauth->getAuthorizationUrl($requestToken['oauth_token']);
+header("Location: {$authUrl}");
+exit;
+```
+
+**Step 2: callback.php** - Handle Discogs callback
+
+```php
+<?php
+// callback.php
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Calliostro\Discogs\ClientFactory;
+use Calliostro\Discogs\{OAuthHelper, ClientFactory};
 
-$discogs = ClientFactory::createWithToken('your-personal-access-token');
+$consumerKey = 'your-consumer-key';
+$consumerSecret = 'your-consumer-secret';
+$verifier = $_GET['oauth_verifier'];
 
-// Access protected endpoints
-$identity = $discogs->identityGet();
-$collection = $discogs->collectionFolders(['username' => 'your-username']);
+$oauth = new OAuthHelper();
+$accessToken = $oauth->getAccessToken(
+    $consumerKey,
+    $consumerSecret,
+    $_SESSION['oauth_token'],
+    $_SESSION['oauth_token_secret'],
+    $verifier
+);
+
+$oauthToken = $accessToken['oauth_token'];
+$oauthSecret = $accessToken['oauth_token_secret'];
+
+// Store tokens for future use
+$_SESSION['oauth_token'] = $oauthToken;
+$_SESSION['oauth_token_secret'] = $oauthSecret;
+
+$discogs = ClientFactory::createWithOAuth($consumerKey, $consumerSecret, $oauthToken, $oauthSecret);
+$identity = $discogs->getIdentity();
+echo "Hello " . $identity['username'];
 ```
-
-### OAuth 1.0a Authentication
-
-For building applications that access user data on their behalf:
-
-```php
-<?php
-
-// You need to implement the OAuth flow to get these tokens
-$discogs = ClientFactory::createWithOAuth('oauth-token', 'oauth-token-secret');
-
-$identity = $discogs->identityGet();
-$orders = $discogs->ordersGet();
-```
-
-> **💡 Note:** Implementing the complete OAuth flow is complex and beyond the scope of this README. For detailed examples, see the [Discogs OAuth Documentation](https://www.discogs.com/developers/#page:authentication,header:authentication-oauth-flow).
 
 ## 🧪 Testing
 
@@ -245,51 +239,40 @@ Check code style:
 composer cs
 ```
 
-## 📚 API Documentation Reference
+## 📚 API Documentation
 
-For complete API documentation including all available parameters, visit the [Discogs API Documentation](https://www.discogs.com/developers/).
+Complete method documentation available at [Discogs API Documentation](https://www.discogs.com/developers/).
 
-### Popular Methods
+> ⚠️ **API Change Notice:** The `getReleaseStats()` endpoint format changed around 2024/2025. It now returns only `{"is_offensive": false}` instead of the documented `{"num_have": X, "num_want": Y}`. For community statistics, use `getRelease()` and access `community.have` and `community.want` instead. Our library handles both formats gracefully.
 
-#### Database Methods
+### Most Used Methods
 
-- `search($params)` – Search the Discogs database
-- `artistGet($params)` – Get artist information
-- `artistReleases($params)` – Get artist's releases
-- `releaseGet($params)` – Get release information
-- `masterGet($params)` – Get master release information
-- `masterVersions($params)` – Get master release versions
-
-#### Collection Methods
-
-- `collectionFolders($params)` – Get user's collection folders
-- `collectionItems($params)` – Get collection items by folder
-- `collectionFolderGet($params)` – Get specific collection folder
-
-#### User Methods
-
-- `identityGet($params)` – Get authenticated user's identity (auth required)
-- `userGet($params)` – Get user profile information
-- `wantlistGet($params)` – Get user's wantlist
+| Method                        | Description      | Auth Level    |
+|-------------------------------|------------------|---------------|
+| `search()`                    | Database search  | 2️⃣+ Consumer |
+| `getArtist()`, `getRelease()` | Public data      | 1️⃣ None      |
+| `listCollectionFolders()`     | Your collections | 3️⃣+ Personal |  
+| `getIdentity()`               | User info        | 3️⃣+ Personal |
+| `getUserInventory()`          | Marketplace      | 3️⃣+ Personal |
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/name`)  
+3. Commit changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/name`)
+5. Open Pull Request
 
-Please ensure your code follows PSR-12 standards and includes tests.
+Please follow PSR-12 standards and include tests.
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT License – see [LICENSE](LICENSE) file.
 
 ## 🙏 Acknowledgments
 
-- [Discogs](https://www.discogs.com/) for providing the excellent music database API
-- [Guzzle](https://docs.guzzlephp.org/) for the robust HTTP client
-- [ricbra/php-discogs-api](https://github.com/ricbra/php-discogs-api) and [AnssiAhola/php-discogs-api](https://github.com/AnssiAhola/php-discogs-api) for the original inspiration
+- [Discogs](https://www.discogs.com/) for the excellent API
+- [Guzzle](https://docs.guzzlephp.org/) for an HTTP client  
+- Previous PHP Discogs implementations for inspiration
 
-> **⭐ Star this repo if you find it useful! It helps others discover this lightweight solution.**
+> ⭐ **Star this repo if you find it useful!**

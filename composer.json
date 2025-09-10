@@ -1,6 +1,6 @@
 {
     "name": "calliostro/php-discogs-api",
-    "description": "Ultra-lightweight Discogs API client for PHP 8.1+ with modern Guzzle-based implementation — Only two classes, service descriptions, zero bloat",
+    "description": "Ultra-lightweight Discogs API client for PHP 8.1+ with modern Guzzle-based implementation — Minimal dependencies, zero bloat",
     "type": "library",
     "keywords": [
         "php",
@@ -58,7 +58,7 @@
         "test": "vendor/bin/phpunit",
         "cs": "vendor/bin/php-cs-fixer fix --dry-run --diff --verbose",
         "cs-fix": "vendor/bin/php-cs-fixer fix --verbose",
-        "analyse": "phpstan analyse src/ --level=8"
+        "analyse": "phpstan analyse src/ tests/ --level=8"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

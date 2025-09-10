@@ -1,192 +1,263 @@
-# Upgrade Guide: v2.x → v3.0
+# Upgrade Guide: v3.x to v4.0
 
-This guide covers the breaking changes when upgrading from php-discogs-api v2.x to v3.0.
+This guide helps you migrate from php-discogs-api v3.x to v4.0.0.
 
-## Overview
+## 🚨 Breaking Changes Overview
 
-v3.0 is a **complete rewrite** with an ultra-lightweight architecture. Every aspect of the API has changed.
+**v4.0.0 introduces consistent, verb-first method naming** across all 60 Discogs API endpoints. This is a **MAJOR VERSION** with intentional breaking changes for improved developer experience.
 
-## Requirements Changes
+### **Breaking Changes**
 
-### PHP Version
+- **All method names changed**: `artistGet()` → `getArtist()`, `userEdit()` → `updateUser()`
+- **No backward compatibility**: v3.x method names will throw errors
+- **Migration required**: See tables below for all method mappings
 
-- **Before (v2.x)**: PHP 7.3+
-- **After (v3.0)**: PHP 8.1+ (strict requirement)
+### **Why Break Everything?**
 
-### Dependencies
+- **Consistency**: Mixed naming patterns (`artistGet` vs `collectionFolders`) were confusing
+- **Simplicity**: Remove internal method mapping code (53 lines less)
 
-- **Before**: Guzzle Services, Command, OAuth Subscriber
-- **After**: Pure Guzzle HTTP client only
+## 📋 Migration Examples
 
-## Namespace Changes
+### Database Methods
 
-```php
-<?php
-
-// OLD (v2.x)
-use Discogs\ClientFactory;
-use Discogs\DiscogsClient;
-
-// NEW (v3.0)  
-use Calliostro\Discogs\ClientFactory;
-use Calliostro\Discogs\DiscogsApiClient;
-```
-
-## Client Creation
-
-### Before (v2.x)
+**v3.x:**
 
 ```php
-<?php
-
-use Discogs\ClientFactory;
-
-// Basic client
-$client = ClientFactory::factory([
-    'headers' => ['User-Agent' => 'MyApp/1.0']
-]);
-
-// With authentication
-$client = ClientFactory::factory([
-    'headers' => [
-        'User-Agent' => 'MyApp/1.0',
-        'Authorization' => 'Discogs token=your-token'
-    ]
-]);
+$artist = $discogs->artistGet(['id' => '139250']);
+$releases = $discogs->artistReleases(['id' => '139250']);
+$release = $discogs->releaseGet(['id' => '16151073']);
+$master = $discogs->masterGet(['id' => '18512']);
+$label = $discogs->labelGet(['id' => '1']);
 ```
 
-### After (v3.0)
+**v4.0:**
 
 ```php
-<?php
-
-use Calliostro\Discogs\ClientFactory;
-
-// Anonymous client
-$client = ClientFactory::create('MyApp/1.0');
-
-// Personal Access Token (recommended)
-$client = ClientFactory::createWithToken('your-token', 'MyApp/1.0');
-
-// OAuth
-$client = ClientFactory::createWithOAuth('token', 'secret', 'MyApp/1.0');
+$artist = $discogs->getArtist(['id' => '139250']);
+$releases = $discogs->listArtistReleases(['id' => '139250']);
+$release = $discogs->getRelease(['id' => '16151073']);
+$master = $discogs->getMaster(['id' => '18512']);
+$label = $discogs->getLabel(['id' => '1']);
 ```
 
-## API Method Calls
+### Marketplace Methods
 
-### Before (v2.x): Guzzle Services Commands
+**v3.x:**
 
 ```php
-<?php
-
-// Search
-$results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
-
-// Get artist (command-based)
-$artist = $client->getArtist(['id' => '45031']);
-
-// Get releases
-$releases = $client->getArtistReleases(['id' => '45031']);
-
-// Marketplace
-$inventory = $client->getInventory(['username' => 'user']);
+$inventory = $discogs->inventoryGet(['username' => 'example']);
+$orders = $discogs->ordersGet(['status' => 'Shipped']);
+$listing = $discogs->listingCreate(['release_id' => '16151073', 'condition' => 'Near Mint (NM or M-)', 'price' => '25.00']);
+$discogs->listingUpdate(['listing_id' => '123', 'price' => '30.00']);
+$discogs->listingDelete(['listing_id' => '123']);
+$order = $discogs->orderGet(['order_id' => '123']);
+$messages = $discogs->orderMessages(['order_id' => '123']);
+$fee = $discogs->fee(['price' => '25.00']);
 ```
 
-### After (v3.0): Magic Method Calls
+**v4.0:**
 
 ```php
-<?php
-
-// Search (same parameters, different method name)
-$results = $client->search(['q' => 'Nirvana', 'type' => 'artist']);
-
-// Get artist (magic method)
-$artist = $client->artistGet(['id' => '45031']);
-
-// Get releases (magic method)
-$releases = $client->artistReleases(['id' => '45031']);
-
-// Marketplace (magic method)
-$inventory = $client->inventoryGet(['username' => 'user']);
+$inventory = $discogs->getUserInventory(['username' => 'example']);
+$orders = $discogs->getMarketplaceOrders(['status' => 'Shipped']);
+$listing = $discogs->createMarketplaceListing(['release_id' => '16151073', 'condition' => 'Near Mint (NM or M-)', 'price' => '25.00']);
+$discogs->updateMarketplaceListing(['listing_id' => '123', 'price' => '30.00']);
+$discogs->deleteMarketplaceListing(['listing_id' => '123']);
+$order = $discogs->getMarketplaceOrder(['order_id' => '123']);
+$messages = $discogs->getMarketplaceOrderMessages(['order_id' => '123']);
+$fee = $discogs->getMarketplaceFee(['price' => '25.00']);
 ```
 
-## Method Name Mapping
+## 📋 Complete Method Migration Table
 
-| v2.x Command                 | v3.0 Magic Method       | Parameters                  |
-|------------------------------|-------------------------|-----------------------------|
-| `getArtist`                  | `artistGet`             | `['id' => 'string']`        |
-| `getArtistReleases`          | `artistReleases`        | `['id' => 'string']`        |
-| `getRelease`                 | `releaseGet`            | `['id' => 'string']`        |
-| `getMaster`                  | `masterGet`             | `['id' => 'string']`        |
-| `getMasterVersions`          | `masterVersions`        | `['id' => 'string']`        |
-| `getLabel`                   | `labelGet`              | `['id' => 'string']`        |
-| `getLabelReleases`           | `labelReleases`         | `['id' => 'string']`        |
-| `search`                     | `search`                | `['q' => 'string']`         |
-| `getOAuthIdentity`           | `identityGet`           | `[]`                        |
-| `getProfile`                 | `userGet`               | `['username' => 'string']`  |
-| `getCollectionFolders`       | `collectionFolders`     | `['username' => 'string']`  |
-| `getCollectionFolder`        | `collectionFolderGet`   | `['username', 'folder_id']` |
-| `getCollectionItemsByFolder` | `collectionItems`       | `['username', 'folder_id']` |
-| `getInventory`               | `inventoryGet`          | `['username' => 'string']`  |
-| `addInventory`               | `inventoryUploadAdd`    | `[...]`                     |
-| `deleteInventory`            | `inventoryUploadDelete` | `[...]`                     |
-| `getOrder`                   | `orderGet`              | `['order_id' => 'string']`  |
-| `getOrders`                  | `ordersGet`             | `[]`                        |
-| `changeOrder`                | `orderUpdate`           | `[...]`                     |
-| `getOrderMessages`           | `orderMessages`         | `['order_id' => 'string']`  |
-| `addOrderMessage`            | `orderMessageAdd`       | `[...]`                     |
-| `createListing`              | `listingCreate`         | `[...]`                     |
-| `changeListing`              | `listingUpdate`         | `[...]`                     |
-| `deleteListing`              | `listingDelete`         | `[...]`                     |
-| `getUserLists`               | `userLists`             | `['username' => 'string']`  |
-| `getLists`                   | `listGet`               | `['list_id' => 'string']`   |
-| `getWantlist`                | `wantlistGet`           | `['username' => 'string']`  |
+### Database Methods
 
-## Configuration Changes
+| v3.x Method                | v4.0 Method                   |
+|----------------------------|-------------------------------|
+| `artistGet()`              | `getArtist()`                 |
+| `artistReleases()`         | `listArtistReleases()`        |
+| `releaseGet()`             | `getRelease()`                |
+| `releaseRatingGet()`       | `getReleaseRatingByUser()`    |
+| `releaseRatingPut()`       | `setReleaseRating()`          |
+| `releaseRatingDelete()`    | `deleteReleaseRating()`       |
+| `releaseRatingCommunity()` | `getCommunityReleaseRating()` |
+| `releaseStats()`           | `getReleaseStats()`           |
+| `masterGet()`              | `getMaster()`                 |
+| `masterVersions()`         | `listMasterVersions()`        |
+| `labelGet()`               | `getLabel()`                  |
+| `labelReleases()`          | `listLabelReleases()`         |
 
-### Service Configuration
+### User & Identity Methods
 
-- **Before**: Complex Guzzle Services YAML/JSON definitions
-- **After**: Simple PHP array in `resources/service.php`
+| v3.x Method           | v4.0 Method               |
+|-----------------------|---------------------------|
+| `identityGet()`       | `getIdentity()`           |
+| `userGet()`           | `getUser()`               |
+| `userEdit()`          | `updateUser()`            |
+| `userSubmissions()`   | `listUserSubmissions()`   |
+| `userContributions()` | `listUserContributions()` |
+| `userLists()`         | `getUserLists()`          |
 
-### Throttling
+### Collection Methods
 
-- **Before**: `ThrottleSubscriber` with Guzzle middlewares
-- **After**: Handle rate limiting in your application layer
+| v3.x Method                  | v4.0 Method                     |
+|------------------------------|---------------------------------|
+| `collectionFolders()`        | `listCollectionFolders()`       |
+| `collectionFolderGet()`      | `getCollectionFolder()`         |
+| `collectionFolderCreate()`   | `createCollectionFolder()`      |
+| `collectionFolderEdit()`     | `updateCollectionFolder()`      |
+| `collectionFolderDelete()`   | `deleteCollectionFolder()`      |
+| `collectionItems()`          | `listCollectionItems()`         |
+| `collectionItemsByRelease()` | `getCollectionItemsByRelease()` |
+| `collectionAddRelease()`     | `addToCollection()`             |
+| `collectionEditRelease()`    | `updateCollectionItem()`        |
+| `collectionRemoveRelease()`  | `removeFromCollection()`        |
+| `collectionCustomFields()`   | `getCustomFields()`             |
+| `collectionEditField()`      | `setCustomFields()`             |
+| `collectionValue()`          | `getCollectionValue()`          |
 
-### Error Handling
+### Wantlist Methods
 
-- **Before**: Guzzle Services exceptions
-- **After**: Standard `RuntimeException` with clear messages
+| v3.x Method        | v4.0 Method            |
+|--------------------|------------------------|
+| `wantlistGet()`    | `getUserWantlist()`    |
+| `wantlistAdd()`    | `addToWantlist()`      |
+| `wantlistEdit()`   | `updateWantlistItem()` |
+| `wantlistRemove()` | `removeFromWantlist()` |
 
-## Testing Your Migration
+### Marketplace & Inventory Methods
 
-1. **Update composer.json**:
+| v3.x Method          | v4.0 Method                        |
+|----------------------|------------------------------------|
+| `inventoryGet()`     | `getUserInventory()`               |
+| `listingGet()`       | `getMarketplaceListing()`          |
+| `listingCreate()`    | `createMarketplaceListing()`       |
+| `listingUpdate()`    | `updateMarketplaceListing()`       |
+| `listingDelete()`    | `deleteMarketplaceListing()`       |
+| `orderGet()`         | `getMarketplaceOrder()`            |
+| `ordersGet()`        | `getMarketplaceOrders()`           |
+| `orderUpdate()`      | `updateMarketplaceOrder()`         |
+| `orderMessages()`    | `getMarketplaceOrderMessages()`    |
+| `orderMessageAdd()`  | `addMarketplaceOrderMessage()`     |
+| `fee()`              | `getMarketplaceFee()`              |
+| `feeByCurrency()`    | `getMarketplaceFeeByCurrency()`    |
+| `priceSuggestions()` | `getMarketplacePriceSuggestions()` |
+| `marketplaceStats()` | `getMarketplaceStats()`            |
 
-   ```json
-   {
-       "require": {
-           "calliostro/php-discogs-api": "^3.0"
-       }
-   }
-   ```
+### Export/Import Methods
 
-2. **Update namespace imports**
-3. **Replace client creation calls**  
-4. **Update method calls using the mapping table**
-5. **Test your application thoroughly**
+| v3.x Method                 | v4.0 Method                 |
+|-----------------------------|-----------------------------|
+| `inventoryExportCreate()`   | `createInventoryExport()`   |
+| `inventoryExportList()`     | `listInventoryExports()`    |
+| `inventoryExportGet()`      | `getInventoryExport()`      |
+| `inventoryExportDownload()` | `downloadInventoryExport()` |
+| `inventoryUploadAdd()`      | `addInventoryUpload()`      |
+| `inventoryUploadChange()`   | `changeInventoryUpload()`   |
+| `inventoryUploadDelete()`   | `deleteInventoryUpload()`   |
+| `inventoryUploadList()`     | `listInventoryUploads()`    |
+| `inventoryUploadGet()`      | `getInventoryUpload()`      |
 
-## Benefits of v3.0
+### User Lists Methods
 
-- **Ultra-lightweight**: Two classes instead of complex services
-- **Better performance**: Direct HTTP calls, no command layer overhead
-- **Modern PHP**: PHP 8.1+ features, strict typing, better IDE support
-- **Easier testing**: Simple mock-friendly HTTP client
-- **Cleaner code**: Magic methods eliminate boilerplate
-- **Better maintainability**: Simplified architecture
+| v3.x Method   | v4.0 Method      |
+|---------------|------------------|
+| `userLists()` | `getUserLists()` |
+| `listGet()`   | `getUserList()`  |
 
-## Need Help?
+## 🛠️ Automated Migration Script
 
-- Check the [README.md](README.md) for complete v3.0 documentation
-- Review the [CHANGELOG.md](CHANGELOG.md) for detailed changes
-- Open an issue if you encounter migration problems
+Use this script to help identify method calls that need updating:
+
+```bash
+# Find common old method calls in your project
+grep -r "artistGet\|releaseGet\|userEdit\|collectionFolders\|wantlistGet\|inventoryGet\|listingCreate\|ordersGet" /path/to/your/project
+
+# Replace most common patterns (backup your files first!)
+sed -i 's/artistGet(/getArtist(/g' /path/to/your/project/*.php
+sed -i 's/releaseGet(/getRelease(/g' /path/to/your/project/*.php
+sed -i 's/userEdit(/updateUser(/g' /path/to/your/project/*.php
+sed -i 's/collectionFolders(/listCollectionFolders(/g' /path/to/your/project/*.php
+sed -i 's/wantlistGet(/getUserWantlist(/g' /path/to/your/project/*.php
+sed -i 's/inventoryGet(/getUserInventory(/g' /path/to/your/project/*.php
+sed -i 's/listingCreate(/createMarketplaceListing(/g' /path/to/your/project/*.php
+sed -i 's/ordersGet(/getMarketplaceOrders(/g' /path/to/your/project/*.php
+```
+
+## 🚀 What's Different
+
+- **Direct method calls** (no internal name translation)
+- **Cleaner error messages** (unknown methods fail immediately)
+
+## 📝 What Stays The Same
+
+- **Parameters**: All method parameters remain identical
+- **Return Values**: All API responses remain identical
+- **Configuration**: ClientFactory usage remains the same
+- **HTTP Client**: Still uses Guzzle (^6.5 || ^7.0)
+- **PHP Requirements**: Still requires PHP ^8.1
+
+## 🔐 Authentication Changes
+
+While the ClientFactory method signatures remain the same, the internal authentication implementation has been **significantly improved**:
+
+### What Changed
+
+- **Personal Access Token**: Now uses a proper Discogs Auth format (`Discogs token=..., key=..., secret=...`)
+- **OAuth 1.0a**: Now uses proper OAuth 1.0a PLAINTEXT signature method
+- **Method Names**: Authentication factory methods renamed:
+  - `createWithToken()` → `createWithPersonalAccessToken()`
+
+### Migration Required
+
+**v3.x code:**
+
+```php
+$discogs = ClientFactory::createWithToken('your-personal-access-token');
+```
+
+**v4.0.0 code:**
+
+```php
+$discogs = ClientFactory::createWithPersonalAccessToken(
+    'your-consumer-key',      // NEW: Required
+    'your-consumer-secret',   // NEW: Required  
+    'your-personal-access-token'
+);
+```
+
+**⚠️ Important**: Personal Access Token now requires **consumer key and secret** in addition to the token.
+
+## 🎯 Migration Checklist
+
+- **Update method calls** using the migration table above
+- **Run tests** to ensure all calls are updated
+- **Update documentation** if you have project-specific docs
+- **Search codebase** for old method names with grep/search
+- **Update composer.json** to `^4.0` version constraint
+
+## 💡 Migration Tips
+
+- **Use IDE Search & Replace**: Most IDEs support project-wide search and replace
+- **Update incrementally**: Migrate one method type at a time (database, collection, etc.)
+- **Run tests frequently**: Catch any missed method calls early
+- **Check error logs**: v4.0 will throw clear "Unknown operation" errors for old method names
+
+## 🆘 Need Help?
+
+- **Issue Tracker**: [GitHub Issues](https://github.com/calliostro/php-discogs-api/issues)
+- **Quick Reference**: All new method names are documented in the [README.md](README.md)
+- **Error messages**: v4.0 provides clear error messages for unknown operations
+
+---
+
+**🎉 Welcome to v4.0!** The most consistent, lightweight, and developer-friendly version yet!
+
+---
+
+## Historical Upgrade Paths
+
+### v2.x → v3.0 (Reference Only)
+
+v3.0 was a complete rewrite with an ultra-lightweight architecture. Namespace changed from `Discogs\` to `Calliostro\Discogs\` and introduced magic method calls.
