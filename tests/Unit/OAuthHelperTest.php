@@ -6,12 +6,14 @@ namespace Calliostro\Discogs\Tests\Unit;
 
 use Calliostro\Discogs\OAuthHelper;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * @covers \Calliostro\Discogs\OAuthHelper
@@ -23,12 +25,15 @@ final class OAuthHelperTest extends TestCase
         $helper = new OAuthHelper();
         $url = $helper->getAuthorizationUrl('request_token');
 
-        $this->assertEquals(
+        $this->assertSame(
             'https://discogs.com/oauth/authorize?oauth_token=request_token',
             $url
         );
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetRequestTokenSuccess(): void
     {
         $mockHandler = new MockHandler([
@@ -41,11 +46,14 @@ final class OAuthHelperTest extends TestCase
         $helper = new OAuthHelper($guzzleClient);
         $result = $helper->getRequestToken('consumer_key', 'consumer_secret', 'https://callback.url');
 
-        $this->assertEquals('request_token', $result['oauth_token']);
-        $this->assertEquals('request_secret', $result['oauth_token_secret']);
-        $this->assertEquals('true', $result['oauth_callback_confirmed']);
+        $this->assertSame('request_token', $result['oauth_token']);
+        $this->assertSame('request_secret', $result['oauth_token_secret']);
+        $this->assertSame('true', $result['oauth_callback_confirmed']);
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetRequestTokenValidatesResponse(): void
     {
         $mockHandler = new MockHandler([
@@ -57,12 +65,15 @@ final class OAuthHelperTest extends TestCase
 
         $helper = new OAuthHelper($guzzleClient);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid OAuth request token response');
 
         $helper->getRequestToken('consumer_key', 'consumer_secret', 'https://callback.url');
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetAccessTokenValidatesResponse(): void
     {
         $mockHandler = new MockHandler([
@@ -74,12 +85,15 @@ final class OAuthHelperTest extends TestCase
 
         $helper = new OAuthHelper($guzzleClient);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid OAuth access token response');
 
         $helper->getAccessToken('consumer_key', 'consumer_secret', 'request_token', 'request_secret', 'verifier');
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetAccessTokenSuccess(): void
     {
         $mockHandler = new MockHandler([
@@ -92,10 +106,13 @@ final class OAuthHelperTest extends TestCase
         $helper = new OAuthHelper($guzzleClient);
         $result = $helper->getAccessToken('consumer_key', 'consumer_secret', 'request_token', 'request_secret', 'verifier');
 
-        $this->assertEquals('access_token', $result['oauth_token']);
-        $this->assertEquals('access_secret', $result['oauth_token_secret']);
+        $this->assertSame('access_token', $result['oauth_token']);
+        $this->assertSame('access_secret', $result['oauth_token_secret']);
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetRequestTokenHandlesGuzzleException(): void
     {
         $mockHandler = new MockHandler([
@@ -107,12 +124,15 @@ final class OAuthHelperTest extends TestCase
 
         $helper = new OAuthHelper($guzzleClient);
 
-        $this->expectException(\GuzzleHttp\Exception\ServerException::class);
+        $this->expectException(ServerException::class);
         $this->expectExceptionMessage('Server Error');
 
         $helper->getRequestToken('consumer_key', 'consumer_secret', 'https://callback.url');
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetAccessTokenHandlesGuzzleException(): void
     {
         $mockHandler = new MockHandler([
@@ -124,12 +144,15 @@ final class OAuthHelperTest extends TestCase
 
         $helper = new OAuthHelper($guzzleClient);
 
-        $this->expectException(\GuzzleHttp\Exception\ServerException::class);
+        $this->expectException(ServerException::class);
         $this->expectExceptionMessage('Server Error');
 
         $helper->getAccessToken('consumer_key', 'consumer_secret', 'request_token', 'request_secret', 'verifier');
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetRequestTokenHandlesNonStringCallbackConfirmed(): void
     {
         $mockHandler = new MockHandler([
@@ -142,11 +165,14 @@ final class OAuthHelperTest extends TestCase
         $helper = new OAuthHelper($guzzleClient);
         $result = $helper->getRequestToken('consumer_key', 'consumer_secret', 'https://callback.url');
 
-        $this->assertEquals('request_token', $result['oauth_token']);
-        $this->assertEquals('request_secret', $result['oauth_token_secret']);
-        $this->assertEquals('false', $result['oauth_callback_confirmed']); // Defaults to 'false'
+        $this->assertSame('request_token', $result['oauth_token']);
+        $this->assertSame('request_secret', $result['oauth_token_secret']);
+        $this->assertSame('false', $result['oauth_callback_confirmed']); // Defaults to 'false'
     }
 
+    /**
+     * @throws GuzzleException If HTTP request fails
+     */
     public function testGetRequestTokenHandlesMissingCallbackConfirmed(): void
     {
         $mockHandler = new MockHandler([
@@ -159,8 +185,8 @@ final class OAuthHelperTest extends TestCase
         $helper = new OAuthHelper($guzzleClient);
         $result = $helper->getRequestToken('consumer_key', 'consumer_secret', 'https://callback.url');
 
-        $this->assertEquals('request_token', $result['oauth_token']);
-        $this->assertEquals('request_secret', $result['oauth_token_secret']);
-        $this->assertEquals('false', $result['oauth_callback_confirmed']); // Defaults to 'false'
+        $this->assertSame('request_token', $result['oauth_token']);
+        $this->assertSame('request_secret', $result['oauth_token_secret']);
+        $this->assertSame('false', $result['oauth_callback_confirmed']); // Defaults to 'false'
     }
 }

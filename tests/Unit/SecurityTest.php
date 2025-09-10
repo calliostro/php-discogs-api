@@ -9,9 +9,12 @@ use Calliostro\Discogs\OAuthHelper;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
 
-class SecurityTest extends TestCase
+final class SecurityTest extends TestCase
 {
     /**
      * @param array<string, mixed> $data
@@ -21,6 +24,9 @@ class SecurityTest extends TestCase
         return json_encode($data) ?: '{}';
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testReDoSProtectionForLongURI(): void
     {
         $mockHandler = new MockHandler([
@@ -30,15 +36,16 @@ class SecurityTest extends TestCase
         $handlerStack = HandlerStack::create($mockHandler);
         $client = new DiscogsApiClient(['handler' => $handlerStack]);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('URI too long');
 
         // Create a very long URI to trigger ReDoS protection
         $longUri = str_repeat('a', 2049);
 
         // We need to use reflection to test the internal buildUri method with a crafted operation
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $property = $reflection->getProperty('config');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $property->setAccessible(true);
 
         $config = $property->getValue($client);
@@ -49,14 +56,18 @@ class SecurityTest extends TestCase
         $property->setValue($client, $config);
 
         // Use reflection to call the operation via the magic __call method
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $method = $reflection->getMethod('__call');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // This should trigger the ReDoS protection
         $method->invoke($client, 'testLongUri', [['id' => '123']]);
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testReDoSProtectionForTooManyPlaceholders(): void
     {
         $mockHandler = new MockHandler([
@@ -66,7 +77,7 @@ class SecurityTest extends TestCase
         $handlerStack = HandlerStack::create($mockHandler);
         $client = new DiscogsApiClient(['handler' => $handlerStack]);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Too many placeholders in URI');
 
         // Create URI with too many placeholders to trigger protection
@@ -75,9 +86,10 @@ class SecurityTest extends TestCase
             $manyPlaceholders .= '/param' . $i . '/{param' . $i . '}';
         }
 
-        // Use reflection to inject malicious operation
-        $reflection = new \ReflectionClass($client);
+        // Use reflection to inject a malicious operation
+        $reflection = new ReflectionClass($client);
         $property = $reflection->getProperty('config');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $property->setAccessible(true);
 
         $config = $property->getValue($client);
@@ -88,21 +100,26 @@ class SecurityTest extends TestCase
         $property->setValue($client, $config);
 
         // Use reflection to call the operation via the magic __call method
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $method = $reflection->getMethod('__call');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // This should trigger the placeholder protection
         $method->invoke($client, 'testManyPlaceholders', [['id' => '123']]);
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testCryptographicallySecureNonceGeneration(): void
     {
         $helper = new OAuthHelper();
 
         // Use reflection to access the private generateNonce method
-        $reflection = new \ReflectionClass($helper);
+        $reflection = new ReflectionClass($helper);
         $method = $reflection->getMethod('generateNonce');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // Generate multiple nonces
@@ -120,16 +137,20 @@ class SecurityTest extends TestCase
 
         // All nonces should be unique (cryptographically secure)
         $uniqueNonces = array_unique($nonces);
-        $this->assertEquals(count($nonces), count($uniqueNonces), 'All nonces should be unique');
+        $this->assertSameSize($nonces, $uniqueNonces, 'All nonces should be unique');
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testNonceEntropyQuality(): void
     {
         $helper = new OAuthHelper();
 
         // Use reflection to access the private generateNonce method
-        $reflection = new \ReflectionClass($helper);
+        $reflection = new ReflectionClass($helper);
         $method = $reflection->getMethod('generateNonce');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // Generate a large sample of nonces

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Calliostro\Discogs\Tests\Integration;
 
 use Calliostro\Discogs\ClientFactory;
+use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -17,6 +18,7 @@ final class AuthenticationTest extends IntegrationTestCase
 {
     /**
      * @param array<string, mixed> $data
+     * @throws Exception If test setup or execution fails
      */
     private function jsonEncode(array $data): string
     {
@@ -41,8 +43,6 @@ final class AuthenticationTest extends IntegrationTestCase
 
         // Pass handler in options, not as GuzzleClient
         $client = ClientFactory::createWithPersonalAccessToken(
-            'test-consumer-key',
-            'test-consumer-secret',
             'test-personal-token',
             ['handler' => $handlerStack]
         );
@@ -62,8 +62,9 @@ final class AuthenticationTest extends IntegrationTestCase
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertStringContainsString('Discogs', $authHeader);
         $this->assertStringContainsString('token=test-personal-token', $authHeader);
-        $this->assertStringContainsString('key=test-consumer-key', $authHeader);
-        $this->assertStringContainsString('secret=test-consumer-secret', $authHeader);
+        // Personal Access Token should NOT include a consumer key / secret
+        $this->assertStringNotContainsString('key=', $authHeader);
+        $this->assertStringNotContainsString('secret=', $authHeader);
 
         // Verify the response was properly decoded
         $this->assertIsArray($result);
@@ -137,8 +138,6 @@ final class AuthenticationTest extends IntegrationTestCase
 
         // Pass handler in options
         $client = ClientFactory::createWithPersonalAccessToken(
-            'consumer-key',
-            'consumer-secret',
             'personal-token',
             ['handler' => $handlerStack]
         );

@@ -93,19 +93,21 @@ jobs:
       - name: Run static analysis
         run: composer analyse
 
-      - name: Run tests
+      - name: Run tests (Unit Tests only)
         run: composer test
 
-      - name: Run integration tests (public API only)
+      - name: Run integration tests (public API only - manual trigger)
+        if: github.event_name == 'workflow_dispatch'
         run: vendor/bin/phpunit tests/Integration/PublicApiIntegrationTest.php --testdox
 
-      - name: Run integration tests (with authentication)
+      - name: Run integration tests (with authentication - manual trigger)
+        if: github.event_name == 'workflow_dispatch'
         env:
           DISCOGS_CONSUMER_KEY: ${{ secrets.DISCOGS_CONSUMER_KEY }}
           DISCOGS_CONSUMER_SECRET: ${{ secrets.DISCOGS_CONSUMER_SECRET }}
-          DISCOGS_PERSONAL_TOKEN: ${{ secrets.DISCOGS_PERSONAL_TOKEN }}
+          DISCOGS_PERSONAL_ACCESS_TOKEN: ${{ secrets.DISCOGS_PERSONAL_ACCESS_TOKEN }}
         run: |
-          if [ -n "$DISCOGS_CONSUMER_KEY" ] && [ -n "$DISCOGS_CONSUMER_SECRET" ] && [ -n "$DISCOGS_PERSONAL_TOKEN" ]; then
+          if [ -n "$DISCOGS_CONSUMER_KEY" ] && [ -n "$DISCOGS_CONSUMER_SECRET" ] && [ -n "$DISCOGS_PERSONAL_ACCESS_TOKEN" ]; then
             vendor/bin/phpunit tests/Integration/AuthenticationLevelsTest.php --testdox
           else
             echo "⚠️  Skipping authenticated integration tests - secrets not available"
@@ -174,8 +176,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Run tests with coverage
-        run: vendor/bin/phpunit --coverage-clover coverage.xml
+      - name: Run tests with coverage (Unit Tests only)
+        run: composer test-coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

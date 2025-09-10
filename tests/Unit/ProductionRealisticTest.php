@@ -13,7 +13,9 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * Additional Production-Realistic Edge Cases
@@ -46,7 +48,7 @@ final class ProductionRealisticTest extends TestCase
     public function testBadGatewayError(): void
     {
         $this->mockHandler->append(
-            new Response(502, [], '<html><body><h1>502 Bad Gateway</h1></body></html>')
+            new Response(502, [], '<html lang="en"><body><h1>502 Bad Gateway</h1></body></html>')
         );
 
         // Guzzle throws ServerException for 5xx responses
@@ -68,7 +70,7 @@ final class ProductionRealisticTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('temporarily unavailable');
 
         $this->client->search(['q' => 'Beatles']);
@@ -87,19 +89,19 @@ final class ProductionRealisticTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('A timeout occurred');
 
         $this->client->getRelease(['id' => '1']);
     }
 
     /**
-     * Test very long response time (simulated timeout)
+     * Test a very long response time (simulated timeout)
      */
     public function testVerySlowResponse(): void
     {
         // Simulate a request that takes too long
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
@@ -121,7 +123,7 @@ final class ProductionRealisticTest extends TestCase
      */
     public function testSslCertificateError(): void
     {
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
@@ -148,7 +150,7 @@ final class ProductionRealisticTest extends TestCase
             new Response(200, [], '{"id": 1, "name": "Ar')
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response');
 
         $this->client->getArtist(['id' => '1']);
@@ -170,7 +172,7 @@ final class ProductionRealisticTest extends TestCase
     }
 
     /**
-     * Test special characters in search queries (user input edge case)
+     * Test special characters in search queries (user-input edge case)
      */
     public function testSpecialCharactersInSearch(): void
     {
@@ -198,7 +200,7 @@ final class ProductionRealisticTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('scheduled maintenance');
 
         $this->client->getArtist(['id' => '1']);
@@ -237,7 +239,7 @@ final class ProductionRealisticTest extends TestCase
             new Response(200, [], $jsonWithBom)
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response');
 
         $this->client->getArtist(['id' => '1']);
@@ -248,7 +250,7 @@ final class ProductionRealisticTest extends TestCase
      */
     public function testHtmlErrorPageResponse(): void
     {
-        $htmlError = '<!DOCTYPE html><html><head><title>Error</title></head><body><h1>Internal Server Error</h1></body></html>';
+        $htmlError = '<!DOCTYPE html><html lang="en"><head><title>Error</title></head><body><h1>Internal Server Error</h1></body></html>';
 
         $this->mockHandler->append(
             new Response(500, ['Content-Type' => 'text/html'], $htmlError)

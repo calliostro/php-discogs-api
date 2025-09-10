@@ -6,6 +6,8 @@ namespace Calliostro\Discogs;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Minimalist Discogs API client using service descriptions
@@ -40,9 +42,9 @@ use GuzzleHttp\Exception\GuzzleException;
  * @method array<string, mixed> deleteCollectionFolder(array $params = []) Delete the collection folder (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-folder</a>
  * @method array<string, mixed> listCollectionItems(array $params = []) Get collection items by folder — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-items-by-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-items-by-folder</a>
  * @method array<string, mixed> getCollectionItemsByRelease(array $params = []) Get collection instances by release — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-items-by-release">https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-items-by-release</a>
- * @method array<string, mixed> addToCollection(array $params = []) Add release to collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-add-to-collection-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-add-to-collection-folder</a>
- * @method array<string, mixed> updateCollectionItem(array $params = []) Edit release in collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-change-rating-of-release">https://www.discogs.com/developers/#page:user-collection,header:user-collection-change-rating-of-release</a>
- * @method array<string, mixed> removeFromCollection(array $params = []) Remove release from collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-instance-from-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-instance-from-folder</a>
+ * @method array<string, mixed> addToCollection(array $params = []) Add release to a collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-add-to-collection-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-add-to-collection-folder</a>
+ * @method array<string, mixed> updateCollectionItem(array $params = []) Edit release in a collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-change-rating-of-release">https://www.discogs.com/developers/#page:user-collection,header:user-collection-change-rating-of-release</a>
+ * @method array<string, mixed> removeFromCollection(array $params = []) Remove release from a collection (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-instance-from-folder">https://www.discogs.com/developers/#page:user-collection,header:user-collection-delete-instance-from-folder</a>
  * @method array<string, mixed> getCustomFields(array $params = []) Get collection custom fields — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-list-custom-fields">https://www.discogs.com/developers/#page:user-collection,header:user-collection-list-custom-fields</a>
  * @method array<string, mixed> setCustomFields(array $params = []) Edit collection custom field (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-edit-fields-instance">https://www.discogs.com/developers/#page:user-collection,header:user-collection-edit-fields-instance</a>
  * @method array<string, mixed> getCollectionValue(array $params = []) Get collection value (OAuth required) — <a href = "https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-value">https://www.discogs.com/developers/#page:user-collection,header:user-collection-collection-value</a>
@@ -131,6 +133,9 @@ final class DiscogsApiClient
      *
      * @param array<int, mixed> $arguments
      * @return array<string, mixed>
+     * @throws RuntimeException If API operation fails or returns invalid data
+     * @throws InvalidArgumentException If method parameters are invalid
+     * @throws GuzzleException If HTTP request fails
      */
     public function __call(string $method, array $arguments): array
     {
@@ -142,85 +147,83 @@ final class DiscogsApiClient
     /**
      * @param array<string, mixed> $params
      * @return array<string, mixed>
+     * @throws RuntimeException If API operation fails or returns invalid data
+     * @throws InvalidArgumentException If method parameters are invalid
+     * @throws GuzzleException If HTTP request fails
      */
     private function callOperation(string $method, array $params): array
     {
         $operationName = $this->convertMethodToOperation($method);
 
         if (!isset($this->config['operations'][$operationName])) {
-            throw new \RuntimeException("Unknown operation: $operationName");
+            throw new RuntimeException("Unknown operation: $operationName");
         }
 
         $operation = $this->config['operations'][$operationName];
 
-        try {
-            $httpMethod = $operation['httpMethod'] ?? 'GET';
-            $originalUri = $operation['uri'] ?? '';
-            $uri = $this->buildUri($originalUri, $params);
+        $httpMethod = $operation['httpMethod'] ?? 'GET';
+        $originalUri = $operation['uri'] ?? '';
+        $uri = $this->buildUri($originalUri, $params);
 
-            // For GET/DELETE requests, separate URI params from query params
-            $queryParams = $params;
-            if (in_array($httpMethod, ['GET', 'DELETE'])) {
-                // Input validation to prevent ReDoS attacks
-                if (strlen($originalUri) > 2048) {
-                    throw new \InvalidArgumentException('URI too long');
-                }
-
-                if (substr_count($originalUri, '{') > 50) {
-                    throw new \InvalidArgumentException('Too many placeholders in URI');
-                }
-
-                // Find all {param} placeholders in the URI template using safe regex
-                // Allow 0 matches for URIs without placeholders
-                $matchCount = preg_match_all('/\{([a-zA-Z][a-zA-Z0-9_]*)\}/u', $originalUri, $matches);
-                $uriParams = $matchCount > 0 ? $matches[1] : [];
-
-                // Only remove URI parameters from a query if they were actually used in URI
-                // Keep parameter as query param if:
-                // 1. It's not a URI parameter, OR
-                // 2. It's a URI parameter but wasn't replaced (still contains {})
-                $queryParams = array_filter($params, function ($key) use ($uriParams, $uri) {
-                    return !in_array($key, $uriParams) || str_contains($uri, '{' . $key . '}');
-                }, ARRAY_FILTER_USE_KEY);
+        // For GET/DELETE requests, separate URI params from query params
+        $queryParams = $params;
+        if (in_array($httpMethod, ['GET', 'DELETE'])) {
+            // Input validation to prevent ReDoS attacks
+            if (strlen($originalUri) > 2048) {
+                throw new InvalidArgumentException('URI too long');
             }
 
-            if ($httpMethod === 'POST') {
-                $response = $this->client->post($uri, ['json' => $params]);
-            } elseif ($httpMethod === 'PUT') {
-                $response = $this->client->put($uri, ['json' => $params]);
-            } elseif ($httpMethod === 'DELETE') {
-                $response = $this->client->delete($uri, ['query' => $queryParams]);
-            } else {
-                $response = $this->client->get($uri, ['query' => $queryParams]);
+            if (substr_count($originalUri, '{') > 50) {
+                throw new InvalidArgumentException('Too many placeholders in URI');
             }
 
-            $body = $response->getBody();
-            $body->rewind(); // Ensure we're at the beginning of the stream
-            $content = $body->getContents();
+            // Find all {param} placeholders in the URI template using safe regex
+            // Allow 0 matches for URIs without placeholders
+            $matchCount = preg_match_all('/\{([a-zA-Z][a-zA-Z0-9_]*)}/u', $originalUri, $matches);
+            $uriParams = $matchCount > 0 ? $matches[1] : [];
 
-            if (empty($content)) {
-                throw new \RuntimeException('Empty response body received');
-            }
-
-            $data = json_decode($content, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \RuntimeException('Invalid JSON response: ' . json_last_error_msg() . ' (Content: ' . substr($content, 0, 100) . ')');
-            }
-
-            if (!is_array($data)) {
-                throw new \RuntimeException('Expected array response from API');
-            }
-
-            if (isset($data['error'])) {
-                throw new \RuntimeException($data['message'] ?? 'API Error', $data['error']);
-            }
-
-            return $data;
-        } catch (GuzzleException $e) {
-            // Pass through all HTTP exceptions unchanged for better error handling
-            throw $e;
+            // Only remove URI parameters from a query if they were actually used in URI
+            // Keep parameter as query param if:
+            // 1. It's not a URI parameter, OR
+            // 2. It's a URI parameter but wasn't replaced (still contains {})
+            $queryParams = array_filter($params, function ($key) use ($uriParams, $uri) {
+                return !in_array($key, $uriParams) || str_contains($uri, '{' . $key . '}');
+            }, ARRAY_FILTER_USE_KEY);
         }
+
+        if ($httpMethod === 'POST') {
+            $response = $this->client->post($uri, ['json' => $params]);
+        } elseif ($httpMethod === 'PUT') {
+            $response = $this->client->put($uri, ['json' => $params]);
+        } elseif ($httpMethod === 'DELETE') {
+            $response = $this->client->delete($uri, ['query' => $queryParams]);
+        } else {
+            $response = $this->client->get($uri, ['query' => $queryParams]);
+        }
+
+        $body = $response->getBody();
+        $body->rewind(); // Ensure we're at the beginning of the stream
+        $content = $body->getContents();
+
+        if (empty($content)) {
+            throw new RuntimeException('Empty response body received');
+        }
+
+        $data = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new RuntimeException('Invalid JSON response: ' . json_last_error_msg() . ' (Content: ' . substr($content, 0, 100) . ')');
+        }
+
+        if (!is_array($data)) {
+            throw new RuntimeException('Expected array response from API');
+        }
+
+        if (isset($data['error'])) {
+            throw new RuntimeException($data['message'] ?? 'API Error', $data['error']);
+        }
+
+        return $data;
     }
 
     /**
@@ -237,13 +240,14 @@ final class DiscogsApiClient
      * Build URI with path parameters
      *
      * @param array<string, mixed> $params
+     * @throws InvalidArgumentException If parameter names contain invalid characters
      */
     private function buildUri(string $uri, array $params): string
     {
         foreach ($params as $key => $value) {
             // Validate parameter name to prevent injection
             if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $key)) {
-                throw new \InvalidArgumentException('Invalid parameter name: ' . $key);
+                throw new InvalidArgumentException('Invalid parameter name: ' . $key);
             }
 
             // URL-encode parameter values to prevent injection

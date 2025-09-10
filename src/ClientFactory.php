@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs;
 
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 
 /**
@@ -33,7 +34,19 @@ final class ClientFactory
      */
     public static function create(array|GuzzleClient $optionsOrClient = []): DiscogsApiClient
     {
-        return new DiscogsApiClient($optionsOrClient);
+        // If GuzzleClient is passed directly, return it as-is
+        if ($optionsOrClient instanceof GuzzleClient) {
+            return new DiscogsApiClient($optionsOrClient);
+        }
+
+        $config = self::getConfig();
+
+        // Merge user options with base configuration
+        $clientOptions = array_merge($optionsOrClient, [
+            'base_uri' => $config['baseUrl'],
+        ]);
+
+        return new DiscogsApiClient(new GuzzleClient($clientOptions));
     }
 
     /**
@@ -45,6 +58,8 @@ final class ClientFactory
      * @param string $accessToken OAuth access token
      * @param string $accessTokenSecret OAuth access token secret
      * @param array<string, mixed>|GuzzleClient $optionsOrClient
+     *
+     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
      */
     public static function createWithOAuth(
         string $consumerKey,
@@ -63,7 +78,7 @@ final class ClientFactory
         $oauthParams = [
             'oauth_consumer_key' => $consumerKey,
             'oauth_token' => $accessToken,
-            'oauth_nonce' => bin2hex(random_bytes(16)), // Cryptographically secure nonce
+            'oauth_nonce' => bin2hex(random_bytes(16)),
             'oauth_signature_method' => 'PLAINTEXT',
             'oauth_timestamp' => (string) time(),
             'oauth_version' => '1.0',
@@ -116,14 +131,10 @@ final class ClientFactory
      * Create a client authenticated with Personal Access Token
      * Uses Discogs-specific authentication format
      *
-     * @param string $consumerKey OAuth consumer key (required for rate limiting)
-     * @param string $consumerSecret OAuth consumer secret (required for rate limiting)
      * @param string $personalAccessToken Personal Access Token from Discogs
      * @param array<string, mixed>|GuzzleClient $optionsOrClient
      */
     public static function createWithPersonalAccessToken(
-        string $consumerKey,
-        string $consumerSecret,
         string $personalAccessToken,
         array|GuzzleClient $optionsOrClient = []
     ): DiscogsApiClient {
@@ -134,8 +145,8 @@ final class ClientFactory
         }
 
         // Discogs-specific authentication format for Personal Access Tokens
-        // Requires both token and consumer credentials for proper API access
-        $authHeader = 'Discogs token=' . $personalAccessToken . ', key=' . $consumerKey . ', secret=' . $consumerSecret;
+        // Personal Access Token should work standalone without consumer credentials
+        $authHeader = 'Discogs token=' . $personalAccessToken;
 
         return self::createClientWithAuth($authHeader, $optionsOrClient);
     }

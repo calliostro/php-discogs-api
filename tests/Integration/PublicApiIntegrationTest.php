@@ -3,6 +3,7 @@
 namespace Calliostro\Discogs\Tests\Integration;
 
 use Calliostro\Discogs\ClientFactory;
+use Exception;
 
 /**
  * Integration Tests for Public API Endpoints
@@ -16,7 +17,7 @@ use Calliostro\Discogs\ClientFactory;
  *
  * Safe for CI/CD - no credentials required!
  */
-class PublicApiIntegrationTest extends IntegrationTestCase
+final class PublicApiIntegrationTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -168,7 +169,7 @@ class PublicApiIntegrationTest extends IntegrationTestCase
      */
     public function testErrorHandling(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/not found|does not exist/i');
 
         // This should throw an exception for non-existent artist

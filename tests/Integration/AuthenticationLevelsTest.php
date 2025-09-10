@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Calliostro\Discogs\Tests\Integration;
 
 use Calliostro\Discogs\ClientFactory;
+use Exception;
 
 /**
  * Integration Tests for All Authentication Levels
@@ -18,9 +19,9 @@ use Calliostro\Discogs\ClientFactory;
  * Requires environment variables:
  * - DISCOGS_CONSUMER_KEY
  * - DISCOGS_CONSUMER_SECRET
- * - DISCOGS_PERSONAL_TOKEN
+ * - DISCOGS_PERSONAL_ACCESS_TOKEN
  */
-class AuthenticationLevelsTest extends IntegrationTestCase
+final class AuthenticationLevelsTest extends IntegrationTestCase
 {
     private string $consumerKey;
     private string $consumerSecret;
@@ -30,7 +31,7 @@ class AuthenticationLevelsTest extends IntegrationTestCase
     {
         $this->consumerKey = getenv('DISCOGS_CONSUMER_KEY') ?: '';
         $this->consumerSecret = getenv('DISCOGS_CONSUMER_SECRET') ?: '';
-        $this->personalToken = getenv('DISCOGS_PERSONAL_TOKEN') ?: '';
+        $this->personalToken = getenv('DISCOGS_PERSONAL_ACCESS_TOKEN') ?: '';
 
         if (empty($this->consumerKey) || empty($this->consumerSecret) || empty($this->personalToken)) {
             $this->markTestSkipped('Authentication credentials not available');
@@ -95,8 +96,6 @@ class AuthenticationLevelsTest extends IntegrationTestCase
     public function testLevel3PersonalAccessToken(): void
     {
         $discogs = ClientFactory::createWithPersonalAccessToken(
-            $this->consumerKey,
-            $this->consumerSecret,
             $this->personalToken
         );
 
@@ -116,7 +115,7 @@ class AuthenticationLevelsTest extends IntegrationTestCase
 
         // Test that we can successfully make authenticated requests
         $this->assertIsArray($searchResults);
-        $this->assertTrue(count($searchResults['results']) > 0);
+        $this->assertNotEmpty($searchResults['results']);
     }
 
     /**
@@ -125,8 +124,6 @@ class AuthenticationLevelsTest extends IntegrationTestCase
     public function testRateLimitingWithAuthentication(): void
     {
         $discogs = ClientFactory::createWithPersonalAccessToken(
-            $this->consumerKey,
-            $this->consumerSecret,
             $this->personalToken
         );
 
@@ -154,7 +151,7 @@ class AuthenticationLevelsTest extends IntegrationTestCase
     {
         $discogs = ClientFactory::create(); // No authentication
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/unauthorized|authentication|401/i');
 
         // This should fail with 401 Unauthorized
@@ -168,7 +165,7 @@ class AuthenticationLevelsTest extends IntegrationTestCase
     {
         $discogs = ClientFactory::createWithConsumerCredentials($this->consumerKey, $this->consumerSecret);
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/unauthorized|authentication|401|403/i');
 
         // This should fail - consumer credentials aren't enough for user data
@@ -186,21 +183,19 @@ class AuthenticationLevelsTest extends IntegrationTestCase
         try {
             $discogs->getArtist(['id' => '999999999']); // Non-existent artist
             $this->fail('Should have thrown exception for non-existent artist');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertStringContainsStringIgnoringCase('not found', $e->getMessage());
         }
 
         // Test with personal token
         $discogsPersonal = ClientFactory::createWithPersonalAccessToken(
-            $this->consumerKey,
-            $this->consumerSecret,
             $this->personalToken
         );
 
         try {
             $discogsPersonal->getUser(['username' => 'nonexistentusernamethatshouldnotexist123']);
             $this->fail('Should have thrown exception for non-existent user');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertStringContainsStringIgnoringCase('not found', $e->getMessage());
         }
     }

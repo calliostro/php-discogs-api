@@ -1,18 +1,40 @@
 # Integration Test Setup
 
+## Test Strategy
+
+Integration tests are **separated from the CI pipeline** to prevent:
+
+- 🚫 Rate limiting (429 Too Many Requests)
+- 🚫 Flaky builds due to network issues
+- 🚫 Dependency on external API availability
+- 🚫 Slow build times (2+ minutes vs. 0.4 seconds)
+
+## Running Tests
+
+```bash
+# Unit tests only (CI default - fast & reliable)
+composer test-unit
+
+# Integration tests only (manual - requires API access)
+composer test-integration  
+
+# All tests together (local development)
+composer test-all
+```
+
 ## GitHub Secrets Required
 
 To enable authenticated integration tests in CI/CD, add these secrets to your GitHub repository:
 
 ### Repository Settings → Secrets and variables → Actions
 
-| Secret Name                  | Description                      | Where to get it                                                           |
-|------------------------------|----------------------------------|---------------------------------------------------------------------------|
-| `DISCOGS_CONSUMER_KEY`       | Your Discogs app consumer key    | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
-| `DISCOGS_CONSUMER_SECRET`    | Your Discogs app consumer secret | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
-| `DISCOGS_PERSONAL_TOKEN`     | Your personal access token       | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
-| `DISCOGS_OAUTH_TOKEN`        | OAuth access token (optional)    | OAuth flow result                                                         |
-| `DISCOGS_OAUTH_TOKEN_SECRET` | OAuth token secret (optional)    | OAuth flow result                                                         |
+| Secret Name                     | Description                      | Where to get it                                                           |
+|---------------------------------|----------------------------------|---------------------------------------------------------------------------|
+| `DISCOGS_CONSUMER_KEY`          | Your Discogs app consumer key    | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
+| `DISCOGS_CONSUMER_SECRET`       | Your Discogs app consumer secret | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
+| `DISCOGS_PERSONAL_ACCESS_TOKEN` | Your personal access token       | [Discogs Developer Settings](https://www.discogs.com/settings/developers) |
+| `DISCOGS_OAUTH_TOKEN`           | OAuth access token (optional)    | OAuth flow result                                                         |
+| `DISCOGS_OAUTH_TOKEN_SECRET`    | OAuth token secret (optional)    | OAuth flow result                                                         |
 
 ## Test Levels
 
@@ -39,7 +61,7 @@ To enable authenticated integration tests in CI/CD, add these secrets to your Gi
 # Set environment variables
 export DISCOGS_CONSUMER_KEY="your-consumer-key"
 export DISCOGS_CONSUMER_SECRET="your-consumer-secret" 
-export DISCOGS_PERSONAL_TOKEN="your-personal-token"
+export DISCOGS_PERSONAL_ACCESS_TOKEN="your-personal-access-token"
 
 # Run public tests only
 vendor/bin/phpunit tests/Integration/PublicApiIntegrationTest.php

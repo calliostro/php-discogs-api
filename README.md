@@ -45,7 +45,7 @@ $discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
 $results = $discogs->search(['q' => 'Daft Punk']);
 
 // Your collections (personal token)  
-$discogs = ClientFactory::createWithPersonalAccessToken('key', 'secret', 'token');
+$discogs = ClientFactory::createWithPersonalAccessToken('token');
 $collection = $discogs->listCollectionFolders(['username' => 'you']);
 
 // Multi-user apps (OAuth)
@@ -151,7 +151,7 @@ $discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
 $results = $discogs->search(['q' => 'Taylor Swift']);
 
 // Level 3: Your account access (most common)
-$discogs = ClientFactory::createWithPersonalAccessToken('key', 'secret', 'token');
+$discogs = ClientFactory::createWithPersonalAccessToken('token');
 $folders = $discogs->listCollectionFolders(['username' => 'you']);
 $wantlist = $discogs->getUserWantlist(['username' => 'you']);
 
@@ -221,23 +221,40 @@ echo "Hello " . $identity['username'];
 
 ## 🧪 Testing
 
-Run the test suite:
+### Quick Testing Commands
 
 ```bash
+# Unit tests (fast, CI-compatible, no external dependencies)
 composer test
+
+# Integration tests (requires Discogs API credentials)
+composer test-integration
+
+# All tests together (unit + integration)
+composer test-all
+
+# Code coverage (HTML + XML reports)
+composer test-coverage
 ```
 
-Run static analysis:
+### Static Analysis & Code Quality
 
 ```bash
+# Static analysis (PHPStan Level 8)
 composer analyse
-```
 
-Check code style:
-
-```bash
+# Code style check (PSR-12)
 composer cs
+
+# Auto-fix code style
+composer cs-fix
 ```
+
+### Test Strategy
+
+- **Unit Tests (101)**: Fast, reliable, no external dependencies → **CI default**
+- **Integration Tests (31)**: Real API calls, rate-limited → **Manual execution**  
+- **Total Coverage**: 100% lines, methods, and classes covered
 
 ## 📚 API Documentation
 

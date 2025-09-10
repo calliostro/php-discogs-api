@@ -5,6 +5,8 @@ namespace Calliostro\Discogs\Tests\Integration;
 use Calliostro\Discogs\DiscogsApiClient;
 use GuzzleHttp\Exception\ClientException;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Base class for integration tests that make real API calls
@@ -21,13 +23,15 @@ abstract class IntegrationTestCase extends TestCase
         parent::setUp();
 
         // Add delay between tests to respect API rate limits
-        // Discogs API: 25 req/min unauthenticated, so we use 3s = 20 req/min to be safe
-        sleep(3); // Conservative rate limiting for unauthenticated requests
+        // Discogs API: 25 req/min unauthenticated (2.4s), 60 req/min authenticated (1s)
+        // Some tests make multiple API calls, so we use conservative 5s delay
+        sleep(5); // Conservative rate limiting for multiple requests per test
     }
 
     /**
      * Override PHPUnit's runTest to add automatic retry on rate limiting
      * This uses reflection to access the private runTest method
+     * @throws ReflectionException If reflection operations fail
      */
     protected function runTest(): mixed
     {
@@ -37,8 +41,9 @@ abstract class IntegrationTestCase extends TestCase
         while ($attempt <= $maxRetries) {
             try {
                 // Use reflection to call the private runTest method
-                $reflection = new \ReflectionClass(parent::class);
+                $reflection = new ReflectionClass(parent::class);
                 $method = $reflection->getMethod('runTest');
+                /** @noinspection PhpExpressionResultUnusedInspection */
                 $method->setAccessible(true);
                 return $method->invoke($this);
             } catch (ClientException $e) {

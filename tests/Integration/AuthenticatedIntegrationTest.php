@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Calliostro\Discogs\Tests\Integration;
 
 use Calliostro\Discogs\ClientFactory;
+use Exception;
 use GuzzleHttp\Exception\ClientException;
 
 /**
@@ -32,15 +33,15 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
     {
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
-        return !empty($consumerKey) && $consumerKey !== false
-            && !empty($consumerSecret) && $consumerSecret !== false;
+        return is_string($consumerKey) && $consumerKey !== ''
+            && is_string($consumerSecret) && $consumerSecret !== '';
     }
 
     private function hasPersonalToken(): bool
     {
-        $personalToken = getenv('DISCOGS_PERSONAL_TOKEN');
+        $personalToken = getenv('DISCOGS_PERSONAL_ACCESS_TOKEN');
         return $this->hasCredentials()
-            && !empty($personalToken) && $personalToken !== false;
+            && is_string($personalToken) && $personalToken !== '';
     }
 
     private function hasOAuthTokens(): bool
@@ -48,8 +49,8 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $oauthToken = getenv('DISCOGS_OAUTH_TOKEN');
         $oauthTokenSecret = getenv('DISCOGS_OAUTH_TOKEN_SECRET');
         return $this->hasCredentials()
-            && !empty($oauthToken) && $oauthToken !== false
-            && !empty($oauthTokenSecret) && $oauthTokenSecret !== false;
+            && is_string($oauthToken) && $oauthToken !== ''
+            && is_string($oauthTokenSecret) && $oauthTokenSecret !== '';
     }
 
     public function testConsumerCredentialsAuthentication(): void
@@ -57,7 +58,7 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
 
-        if ($consumerKey === false || $consumerSecret === false) {
+        if (!is_string($consumerKey) || !is_string($consumerSecret)) {
             $this->markTestSkipped('Consumer credentials not available');
         }
 
@@ -84,15 +85,13 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
 
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
-        $personalToken = getenv('DISCOGS_PERSONAL_TOKEN');
+        $personalToken = getenv('DISCOGS_PERSONAL_ACCESS_TOKEN');
 
-        if ($consumerKey === false || $consumerSecret === false || $personalToken === false) {
+        if (!is_string($consumerKey) || !is_string($consumerSecret) || !is_string($personalToken)) {
             $this->markTestSkipped('Required credentials not available');
         }
 
         $client = ClientFactory::createWithPersonalAccessToken(
-            $consumerKey,
-            $consumerSecret,
             $personalToken
         );
 
@@ -118,8 +117,8 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $oauthToken = getenv('DISCOGS_OAUTH_TOKEN');
         $oauthTokenSecret = getenv('DISCOGS_OAUTH_TOKEN_SECRET');
 
-        if ($consumerKey === false || $consumerSecret === false ||
-            $oauthToken === false || $oauthTokenSecret === false) {
+        if (!is_string($consumerKey) || !is_string($consumerSecret) ||
+            !is_string($oauthToken) || !is_string($oauthTokenSecret)) {
             $this->markTestSkipped('Required OAuth credentials not available');
         }
 
@@ -144,7 +143,7 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
 
-        if ($consumerKey === false || $consumerSecret === false) {
+        if (!is_string($consumerKey) || !is_string($consumerSecret)) {
             $this->markTestSkipped('Consumer credentials not available');
         }
 
@@ -167,12 +166,15 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
                 // Small delay to be respectful
                 usleep(100000); // 0.1 seconds
             } catch (ClientException $e) {
-                if (strpos($e->getMessage(), '429') !== false) {
+                if (str_contains($e->getMessage(), '429')) {
                     // Rate limited - this is expected behavior
                     $this->addToAssertionCount(1); // Count as a successful test
                     break;
                 }
                 throw $e;
+            } catch (Exception $e) {
+                // Handle any other unexpected exceptions
+                $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         }
 
@@ -184,7 +186,7 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
 
-        if ($consumerKey === false || $consumerSecret === false) {
+        if (!is_string($consumerKey) || !is_string($consumerSecret)) {
             $this->markTestSkipped('Consumer credentials not available');
         }
 
@@ -210,7 +212,7 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         $consumerKey = getenv('DISCOGS_CONSUMER_KEY');
         $consumerSecret = getenv('DISCOGS_CONSUMER_SECRET');
 
-        if ($consumerKey !== false && $consumerSecret !== false) {
+        if (is_string($consumerKey) && is_string($consumerSecret)) {
             $methods['createWithConsumerCredentials'] = [
                 $consumerKey,
                 $consumerSecret
@@ -218,11 +220,9 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         }
 
         if ($this->hasPersonalToken()) {
-            $personalToken = getenv('DISCOGS_PERSONAL_TOKEN');
-            if ($consumerKey !== false && $consumerSecret !== false && $personalToken !== false) {
+            $personalToken = getenv('DISCOGS_PERSONAL_ACCESS_TOKEN');
+            if (is_string($consumerKey) && is_string($consumerSecret) && is_string($personalToken)) {
                 $methods['createWithPersonalAccessToken'] = [
-                    $consumerKey,
-                    $consumerSecret,
                     $personalToken
                 ];
             }
@@ -231,8 +231,8 @@ final class AuthenticatedIntegrationTest extends IntegrationTestCase
         if ($this->hasOAuthTokens()) {
             $oauthToken = getenv('DISCOGS_OAUTH_TOKEN');
             $oauthTokenSecret = getenv('DISCOGS_OAUTH_TOKEN_SECRET');
-            if ($consumerKey !== false && $consumerSecret !== false &&
-                $oauthToken !== false && $oauthTokenSecret !== false) {
+            if (is_string($consumerKey) && is_string($consumerSecret) &&
+                is_string($oauthToken) && is_string($oauthTokenSecret)) {
                 $methods['createWithOAuth'] = [
                     $consumerKey,
                     $consumerSecret,

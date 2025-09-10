@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs;
 
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use RuntimeException;
 
 /**
  * OAuth 1.0a helper for Discogs API authentication
@@ -48,7 +50,9 @@ final class OAuthHelper
      * @param string $consumerSecret Your application's consumer secret
      * @param string $callbackUrl Your application's callback URL
      * @return array{oauth_token: string, oauth_token_secret: string, oauth_callback_confirmed: string}
-     * @throws \RuntimeException
+     * @throws RuntimeException If OAuth request token cannot be obtained
+     * @throws GuzzleException If HTTP request fails
+     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
      */
     public function getRequestToken(string $consumerKey, string $consumerSecret, string $callbackUrl): array
     {
@@ -65,32 +69,28 @@ final class OAuthHelper
 
         $authHeader = $this->buildAuthorizationHeader($params);
 
-        try {
-            $response = $this->client->get('oauth/request_token', [
-                'headers' => ['Authorization' => $authHeader]
-            ]);
+        $response = $this->client->get('oauth/request_token', [
+            'headers' => ['Authorization' => $authHeader]
+        ]);
 
-            $body = $response->getBody()->getContents();
-            parse_str($body, $result);
+        $body = $response->getBody()->getContents();
+        parse_str($body, $result);
 
-            if (!isset($result['oauth_token'], $result['oauth_token_secret']) ||
-                !is_string($result['oauth_token']) || !is_string($result['oauth_token_secret'])) {
-                throw new \RuntimeException('Invalid OAuth request token response: ' . $body);
-            }
-
-            $callbackConfirmed = $result['oauth_callback_confirmed'] ?? 'false';
-            if (!is_string($callbackConfirmed)) {
-                $callbackConfirmed = 'false';
-            }
-
-            return [
-                'oauth_token' => $result['oauth_token'],
-                'oauth_token_secret' => $result['oauth_token_secret'],
-                'oauth_callback_confirmed' => $callbackConfirmed
-            ];
-        } catch (GuzzleException $e) {
-            throw $e;
+        if (!isset($result['oauth_token'], $result['oauth_token_secret']) ||
+            !is_string($result['oauth_token']) || !is_string($result['oauth_token_secret'])) {
+            throw new RuntimeException('Invalid OAuth request token response: ' . $body);
         }
+
+        $callbackConfirmed = $result['oauth_callback_confirmed'] ?? 'false';
+        if (!is_string($callbackConfirmed)) {
+            $callbackConfirmed = 'false';
+        }
+
+        return [
+            'oauth_token' => $result['oauth_token'],
+            'oauth_token_secret' => $result['oauth_token_secret'],
+            'oauth_callback_confirmed' => $callbackConfirmed
+        ];
     }
 
     /**
@@ -113,7 +113,9 @@ final class OAuthHelper
      * @param string $requestTokenSecret The request token secret from step 1
      * @param string $verifier The verification code from the callback
      * @return array{oauth_token: string, oauth_token_secret: string}
-     * @throws \RuntimeException
+     * @throws RuntimeException If OAuth access token cannot be obtained
+     * @throws GuzzleException If HTTP request fails
+     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
      */
     public function getAccessToken(
         string $consumerKey,
@@ -136,28 +138,29 @@ final class OAuthHelper
 
         $authHeader = $this->buildAuthorizationHeader($params);
 
-        try {
-            $response = $this->client->get('oauth/access_token', [
-                'headers' => ['Authorization' => $authHeader]
-            ]);
+        $response = $this->client->get('oauth/access_token', [
+            'headers' => ['Authorization' => $authHeader]
+        ]);
 
-            $body = $response->getBody()->getContents();
-            parse_str($body, $result);
+        $body = $response->getBody()->getContents();
+        parse_str($body, $result);
 
-            if (!isset($result['oauth_token'], $result['oauth_token_secret']) ||
-                !is_string($result['oauth_token']) || !is_string($result['oauth_token_secret'])) {
-                throw new \RuntimeException('Invalid OAuth access token response: ' . $body);
-            }
-
-            return [
-                'oauth_token' => $result['oauth_token'],
-                'oauth_token_secret' => $result['oauth_token_secret']
-            ];
-        } catch (GuzzleException $e) {
-            throw $e;
+        if (!isset($result['oauth_token'], $result['oauth_token_secret']) ||
+            !is_string($result['oauth_token']) || !is_string($result['oauth_token_secret'])) {
+            throw new RuntimeException('Invalid OAuth access token response: ' . $body);
         }
+
+        return [
+            'oauth_token' => $result['oauth_token'],
+            'oauth_token_secret' => $result['oauth_token_secret']
+        ];
     }
 
+    /**
+     * Generate cryptographically secure OAuth nonce
+     *
+     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
+     */
     private function generateNonce(): string
     {
         return bin2hex(random_bytes(16)); // Cryptographically secure nonce

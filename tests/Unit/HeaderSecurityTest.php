@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Calliostro\Discogs\Tests\Unit;
 
 use Calliostro\Discogs\ClientFactory;
+use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
-class HeaderSecurityTest extends TestCase
+final class HeaderSecurityTest extends TestCase
 {
     public function testUserCannotOverrideAuthorizationWithPersonalAccessToken(): void
     {
@@ -25,8 +26,6 @@ class HeaderSecurityTest extends TestCase
 
         // User tries to override Authorization header
         $client = ClientFactory::createWithPersonalAccessToken(
-            'key123',
-            'secret456',
             'token789',
             [
                 'handler' => $handlerStack,
@@ -48,10 +47,13 @@ class HeaderSecurityTest extends TestCase
         $this->assertStringNotContainsString('Bearer malicious-token', $authHeader);
 
         // User's other headers should be preserved
-        $this->assertEquals('MyApp/1.0', $request->getHeaderLine('User-Agent'));
-        $this->assertEquals('custom-value', $request->getHeaderLine('X-Custom'));
+        $this->assertSame('MyApp/1.0', $request->getHeaderLine('User-Agent'));
+        $this->assertSame('custom-value', $request->getHeaderLine('X-Custom'));
     }
 
+    /**
+     * @throws Exception If test setup or execution fails
+     */
     public function testUserCannotOverrideAuthorizationWithOAuth(): void
     {
         $mock = new MockHandler([
@@ -101,8 +103,6 @@ class HeaderSecurityTest extends TestCase
         $handlerStack->push(Middleware::history($history));
 
         $client = ClientFactory::createWithPersonalAccessToken(
-            'key123',
-            'secret456',
             'token789',
             [
                 'handler' => $handlerStack,
@@ -123,7 +123,7 @@ class HeaderSecurityTest extends TestCase
         $this->assertStringStartsWith('Discogs token=token789', $request->getHeaderLine('Authorization'));
 
         // All user headers should be preserved
-        $this->assertEquals('CustomApp/2.0', $request->getHeaderLine('User-Agent'));
+        $this->assertSame('CustomApp/2.0', $request->getHeaderLine('User-Agent'));
         $this->assertEquals('application/json', $request->getHeaderLine('Accept'));
         $this->assertEquals('v2', $request->getHeaderLine('X-API-Version'));
         $this->assertEquals('no-cache', $request->getHeaderLine('Cache-Control'));

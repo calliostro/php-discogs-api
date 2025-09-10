@@ -7,13 +7,21 @@ namespace Calliostro\Discogs\Tests\Unit;
 use Calliostro\Discogs\DiscogsApiClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
 
 /**
  * @covers \Calliostro\Discogs\DiscogsApiClient
@@ -88,10 +96,11 @@ final class DiscogsApiClientTest extends TestCase
 
     public function testUnknownOperationThrowsException(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unknown operation: unknownMethod');
 
-        // @phpstan-ignore-next-line - Testing invalid method call
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @phpstan-ignore-next-line */
         $this->client->unknownMethod();
     }
 
@@ -101,7 +110,7 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], 'invalid json')
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response:');
 
         $this->client->getArtist(['id' => '108713']);
@@ -116,7 +125,7 @@ final class DiscogsApiClientTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Bad Request: Invalid ID');
 
         $this->client->getArtist(['id' => 'invalid']);
@@ -131,7 +140,7 @@ final class DiscogsApiClientTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('API Error');
 
         $this->client->getArtist(['id' => '123']);
@@ -293,14 +302,14 @@ final class DiscogsApiClientTest extends TestCase
     public function testHttpExceptionHandling(): void
     {
         $this->mockHandler->append(
-            new \GuzzleHttp\Exception\RequestException(
+            new RequestException(
                 'Connection failed',
-                new \GuzzleHttp\Psr7\Request('GET', 'test')
+                new Request('GET', 'test')
             )
         );
 
         // HTTP exceptions should pass through unchanged (lightweight approach)
-        $this->expectException(\GuzzleHttp\Exception\RequestException::class);
+        $this->expectException(RequestException::class);
         $this->expectExceptionMessage('Connection failed');
 
         $this->client->getArtist(['id' => '123']);
@@ -312,7 +321,7 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], '"not an array"')
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Expected array response from API');
 
         $this->client->getArtist(['id' => '123']);
@@ -364,9 +373,10 @@ final class DiscogsApiClientTest extends TestCase
         // This will call the protected convertMethodToOperation indirectly
         // by testing edge cases in method name conversion
         try {
-            // @phpstan-ignore-next-line - Testing invalid method call
+            /** @noinspection PhpUndefinedMethodInspection */
+            /** @phpstan-ignore-next-line */
             $this->client->testMethodName();
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->assertStringContainsString('Unknown operation', $e->getMessage());
         }
     }
@@ -396,11 +406,15 @@ final class DiscogsApiClientTest extends TestCase
         $this->assertEquals(['success' => true], $result);
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testConvertMethodToOperationWithEdgeCases(): void
     {
         // Test the convertMethodToOperation method with edge cases
-        $reflection = new \ReflectionClass($this->client);
+        $reflection = new ReflectionClass($this->client);
         $method = $reflection->getMethod('convertMethodToOperation');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // Test with empty string (should return empty string)
@@ -416,11 +430,15 @@ final class DiscogsApiClientTest extends TestCase
         $this->assertEquals('ArtistGetReleases', $result);
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testBuildUriWithComplexParameters(): void
     {
         // Test the buildUri method directly with complex scenarios
-        $reflection = new \ReflectionClass($this->client);
+        $reflection = new ReflectionClass($this->client);
         $method = $reflection->getMethod('buildUri');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // Test with leading slash
@@ -440,11 +458,15 @@ final class DiscogsApiClientTest extends TestCase
         $this->assertEquals('/users/testuser/collection/folders/1', $result);
     }
 
+    /**
+     * @throws ReflectionException If reflection operations fail
+     */
     public function testPregSplitEdgeCaseHandling(): void
     {
         // Test case where preg_split might return false - this might be the missing line
-        $reflection = new \ReflectionClass($this->client);
+        $reflection = new ReflectionClass($this->client);
         $method = $reflection->getMethod('convertMethodToOperation');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
         // Test with a long method name (100 characters) to potentially trigger edge cases
@@ -463,22 +485,22 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
-        $httpClient = new \GuzzleHttp\Client([
+        $httpClient = new Client([
             'base_uri' => 'https://api.discogs.com/',
             'handler' => $handlerStack
         ]);
         $client = new DiscogsApiClient($httpClient);
 
-        // Test case 1: URI parameter should NOT appear in query string
+        // Test case 1: URI parameter should NOT appear in the query string
         $client->listArtistReleases(['id' => '123', 'per_page' => '10']);
 
         $request = $container[0]['request'];
         $this->assertEquals('/artists/123/releases', $request->getUri()->getPath());
         $this->assertEquals('per_page=10', $request->getUri()->getQuery());
 
-        // Verify that 'id' parameter is NOT in query (it was used in URI)
+        // Verify that the 'id' parameter is NOT in the query (it was used in URI)
         $this->assertStringNotContainsString('id=', $request->getUri()->getQuery());
     }
 
@@ -492,9 +514,9 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
-        $httpClient = new \GuzzleHttp\Client([
+        $httpClient = new Client([
             'base_uri' => 'https://api.discogs.com/',
             'handler' => $handlerStack
         ]);
@@ -510,7 +532,7 @@ final class DiscogsApiClientTest extends TestCase
         $this->assertStringContainsString('q=Taylor%20Swift', $query);
         $this->assertStringContainsString('type=artist', $query);
 
-        // Test case 2: Multiple URI parameters should not appear in query
+        // Test case 2: Multiple URI parameters should not appear in the query
         $client->listCollectionFolders(['username' => 'testuser']);
 
         $request = $container[1]['request'];
@@ -528,15 +550,15 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
-        $httpClient = new \GuzzleHttp\Client([
+        $httpClient = new Client([
             'base_uri' => 'https://api.discogs.com/',
             'handler' => $handlerStack
         ]);
         $client = new DiscogsApiClient($httpClient);
 
-        // Test case 1: getArtist should NOT have 'id' in query when it's in URI
+        // Test case 1: getArtist should NOT have 'id' in the query when it's in URI
         $client->getArtist(['id' => '139250']);
 
         $request = $container[0]['request'];
@@ -564,12 +586,13 @@ final class DiscogsApiClientTest extends TestCase
 
     public function testServiceConfigurationLoading(): void
     {
-        // Test that service configuration is properly loaded
-        $client = new DiscogsApiClient(new \GuzzleHttp\Client());
+        // Test that the service configuration is properly loaded
+        $client = new DiscogsApiClient(new Client());
 
         // Use reflection to access private config
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $configProperty = $reflection->getProperty('config');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $configProperty->setAccessible(true);
         $config = $configProperty->getValue($client);
 
@@ -587,9 +610,9 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
-        // Create client with array options, not GuzzleClient directly
+        // Create a client with array options, not GuzzleClient directly
         $client = new DiscogsApiClient([
             'handler' => $handlerStack
         ]);
@@ -599,7 +622,7 @@ final class DiscogsApiClientTest extends TestCase
         $request = $container[0]['request'];
         $userAgent = $request->getHeaderLine('User-Agent');
 
-        // Test that User-Agent follows expected format (not specific version)
+        // Test that User-Agent follows an expected format (not a specific version)
         $this->assertMatchesRegularExpression('/^DiscogsClient\/\d+\.\d+\.\d+ \+https:\/\/github\.com\/calliostro\/php-discogs-api$/', $userAgent);
         $this->assertNotEmpty($userAgent);
     }
@@ -616,7 +639,7 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
         $client = new DiscogsApiClient([
             'handler' => $handlerStack
@@ -638,7 +661,7 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
         // Use array options to set custom User-Agent
         $client = new DiscogsApiClient([
@@ -659,7 +682,7 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], '{"id": 123}')
         ]);
 
-        $customClient = new \GuzzleHttp\Client([
+        $customClient = new Client([
             'handler' => HandlerStack::create($mockHandler),
             'timeout' => 999 // Custom option to verify it's used
         ]);
@@ -667,8 +690,9 @@ final class DiscogsApiClientTest extends TestCase
         $client = new DiscogsApiClient($customClient);
 
         // Use reflection to verify the client was used directly
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $clientProperty = $reflection->getProperty('client');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $clientProperty->setAccessible(true);
         $actualClient = $clientProperty->getValue($client);
 
@@ -681,11 +705,12 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], '{"results": []}')
         ]);
 
-        $client = new DiscogsApiClient(new \GuzzleHttp\Client([
+        $client = new DiscogsApiClient(new Client([
             'handler' => HandlerStack::create($mockHandler)
         ]));
 
         // This should work without throwing exceptions
+        /** @noinspection PhpRedundantOptionalArgumentInspection */
         $result = $client->search([]);
         $this->assertIsArray($result);
     }
@@ -700,11 +725,11 @@ final class DiscogsApiClientTest extends TestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $container = [];
-        $handlerStack->push(\GuzzleHttp\Middleware::history($container));
+        $handlerStack->push(Middleware::history($container));
 
-        $client = new DiscogsApiClient(new \GuzzleHttp\Client([
+        $client = new DiscogsApiClient(new Client([
             'handler' => $handlerStack,
-            'base_uri' => 'https://api.discogs.com/' // Explicitly set base URI for test
+            'base_uri' => 'https://api.discogs.com/' // Explicitly set base URI for the test
         ]));
 
         // Test marketplace fee calculation
@@ -755,19 +780,22 @@ final class DiscogsApiClientTest extends TestCase
     }
 
     /**
-     * Test config file loading on first instantiation (Line 108)
+     * Test config file loading on the first instantiation (Line 108)
      * This tests the previously uncovered cached config loading path.
      */
     public function testConfigFileLoadingOnFirstInstantiation(): void
     {
         // Reset the cached config using reflection to force config loading
-        $reflection = new \ReflectionClass(DiscogsApiClient::class);
+        $reflection = new ReflectionClass(DiscogsApiClient::class);
         $cachedConfigProperty = $reflection->getProperty('cachedConfig');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $cachedConfigProperty->setAccessible(true);
         $cachedConfigProperty->setValue(null, null); // Reset to null to force loading
 
-        // Create new client - this should trigger Line 108 (config file loading)
+        // Create a new client - this should trigger Line 108 (config file loading)
         $client = new DiscogsApiClient();
+        /** @noinspection PhpConditionAlreadyCheckedInspection */
+        $this->assertInstanceOf(DiscogsApiClient::class, $client);
 
         // Verify the config was loaded
         $cachedConfig = $cachedConfigProperty->getValue();
@@ -782,7 +810,7 @@ final class DiscogsApiClientTest extends TestCase
      */
     public function testEmptyResponseBodyThrowsException(): void
     {
-        // Mock a client that returns empty body
+        // Mock a client that returns an empty body
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockBody = $this->createMock(StreamInterface::class);
 
@@ -796,7 +824,7 @@ final class DiscogsApiClientTest extends TestCase
             ->method('getBody')
             ->willReturn($mockBody);
 
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
@@ -804,7 +832,7 @@ final class DiscogsApiClientTest extends TestCase
 
         $client = new DiscogsApiClient($mockClient);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Empty response body received');
 
         $client->getArtist(['id' => '1']);
@@ -813,6 +841,7 @@ final class DiscogsApiClientTest extends TestCase
     /**
      * Test parameter name validation in buildUri method (Line 248)
      * This tests the uncovered parameter validation exception path.
+     * @throws GuzzleException If HTTP request fails
      */
     public function testBuildUriInvalidParameterNameThrowsException(): void
     {
@@ -825,8 +854,9 @@ final class DiscogsApiClientTest extends TestCase
         $client = new DiscogsApiClient($mockClient);
 
         // Use reflection to set config for a URI that uses parameters
-        $reflection = new \ReflectionClass($client);
+        $reflection = new ReflectionClass($client);
         $configProperty = $reflection->getProperty('config');
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $configProperty->setAccessible(true);
 
         $config = $configProperty->getValue($client);
@@ -837,10 +867,10 @@ final class DiscogsApiClientTest extends TestCase
         ];
         $configProperty->setValue($client, $config);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid parameter name: invalid-param');
 
-        // Call method that triggers buildUri with invalid parameter name
+        // Call the method that triggers buildUri with an invalid parameter name
         $client->__call('testInvalidParam', [['invalid-param' => 'value']]);
     }
 
@@ -849,7 +879,7 @@ final class DiscogsApiClientTest extends TestCase
      */
     public function testNetworkTimeoutHandling(): void
     {
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
@@ -860,7 +890,7 @@ final class DiscogsApiClientTest extends TestCase
 
         $client = new DiscogsApiClient($mockClient);
 
-        $this->expectException(\GuzzleHttp\Exception\ConnectException::class);
+        $this->expectException(ConnectException::class);
         $this->expectExceptionMessage('Connection timed out');
 
         $client->getArtist(['id' => '1']);
@@ -878,7 +908,7 @@ final class DiscogsApiClientTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('You have exceeded the rate limit');
 
         $this->client->getArtist(['id' => '1']);
@@ -896,7 +926,7 @@ final class DiscogsApiClientTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('The server encountered an error');
 
         $this->client->getRelease(['id' => '1']);
@@ -911,7 +941,7 @@ final class DiscogsApiClientTest extends TestCase
             new Response(200, [], '{"name": "Artist with \x00 null bytes", "invalid": "}')
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response');
 
         $this->client->getArtist(['id' => '1']);
@@ -948,7 +978,7 @@ final class DiscogsApiClientTest extends TestCase
      */
     public function testLargeResponseHandling(): void
     {
-        // Simulate large response (many releases)
+        // Simulate a large response (many releases)
         $releases = [];
         for ($i = 0; $i < 1000; $i++) {
             $releases[] = [
@@ -985,7 +1015,7 @@ final class DiscogsApiClientTest extends TestCase
             ]))
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid ID parameter');
 
         $this->client->getArtist(['id' => '']); // Empty string ID
@@ -1010,7 +1040,7 @@ final class DiscogsApiClientTest extends TestCase
      */
     public function testDnsResolutionFailure(): void
     {
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
@@ -1021,7 +1051,7 @@ final class DiscogsApiClientTest extends TestCase
 
         $client = new DiscogsApiClient($mockClient);
 
-        $this->expectException(\GuzzleHttp\Exception\ConnectException::class);
+        $this->expectException(ConnectException::class);
         $this->expectExceptionMessage('Could not resolve host');
 
         $client->search(['q' => 'test']);
@@ -1046,13 +1076,13 @@ final class DiscogsApiClientTest extends TestCase
 
         $mockResponse->expects($this->once())->method('getBody')->willReturn($mockBody);
 
-        /** @var \GuzzleHttp\Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
+        /** @var Client&MockObject $mockClient */
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())->method('get')->willReturn($mockResponse);
 
         $client = new DiscogsApiClient($mockClient);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Empty response body received');
 
         $client->getArtist(['id' => '1']);

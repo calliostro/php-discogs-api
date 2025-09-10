@@ -11,7 +11,13 @@
          displayDetailsOnIncompleteTests="true"
          displayDetailsOnSkippedTests="true">
   <testsuites>
-    <testsuite name="Discogs API Test Suite">
+    <testsuite name="Unit Tests">
+      <directory>tests/Unit</directory>
+    </testsuite>
+    <testsuite name="Integration Tests">
+      <directory>tests/Integration</directory>
+    </testsuite>
+    <testsuite name="All Tests">
       <directory>tests</directory>
     </testsuite>
   </testsuites>
