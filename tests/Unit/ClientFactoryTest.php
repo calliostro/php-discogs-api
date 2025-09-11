@@ -17,7 +17,7 @@ use ReflectionClass;
 
 /**
  * @covers \Calliostro\Discogs\ClientFactory
- * @uses DiscogsApiClient
+ * @uses \Calliostro\Discogs\DiscogsApiClient
  */
 final class ClientFactoryTest extends TestCase
 {
