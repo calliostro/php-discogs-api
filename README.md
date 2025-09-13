@@ -35,14 +35,19 @@ composer require calliostro/php-discogs-api
 
 ## 🚀 Quick Start
 
-```php
-// Public data (no registration needed)
-$discogs = DiscogsClientFactory::create();
-$artist = $discogs->getArtist(5590213); // Billie Eilish
-$release = $discogs->getRelease(19929817); // Olivia Rodrigo - Sour
-$label = $discogs->getLabel(2311); // Interscope Records
+**Public data (no registration needed):**
 
-// Search (consumer credentials) - Modern parameter styles
+```php
+$discogs = DiscogsClientFactory::create();
+
+$artist = $discogs->getArtist(5590213);     // Billie Eilish
+$release = $discogs->getRelease(19929817);  // Olivia Rodrigo - Sour
+$label = $discogs->getLabel(2311);          // Interscope Records
+```
+
+**Search with consumer credentials:**
+
+```php
 $discogs = DiscogsClientFactory::createWithConsumerCredentials('key', 'secret');
 
 // Positional parameters (traditional)
@@ -57,9 +62,13 @@ $releases = $discogs->listArtistReleases(
     sortOrder: 'desc',
     perPage: 25
 );
+```
 
-// Your collections (personal token)  
+**Your collections (personal token):**
+
+```php
 $discogs = DiscogsClientFactory::createWithPersonalAccessToken('token');
+
 $collection = $discogs->listCollectionFolders('your-username');
 $wantlist = $discogs->getUserWantlist('your-username');
 
@@ -69,9 +78,13 @@ $discogs->addToCollection(
     folderId: 1,
     releaseId: 30359313
 );
+```
 
-// Multi-user apps (OAuth)
+**Multi-user apps (OAuth):**
+
+```php
 $discogs = DiscogsClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
+
 $identity = $discogs->getIdentity();
 ```
 
