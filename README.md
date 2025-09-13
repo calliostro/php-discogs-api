@@ -10,7 +10,7 @@
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
 [![Code Style](https://img.shields.io/badge/code%20style-PSR12-brightgreen.svg)](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
-> **🚀 MINIMAL YET POWERFUL!** Focused ~750-line Discogs API client — as lightweight as possible while maintaining modern PHP comfort and clean APIs.
+> **🚀 MINIMAL YET POWERFUL!** Focused, lightweight Discogs API client — as compact as possible while maintaining modern PHP comfort and clean APIs.
 
 ## 📦 Installation
 
@@ -93,7 +93,7 @@ $identity = $discogs->getIdentity();
 - **Simple Setup** – Works immediately with public data, easy authentication for advanced features
 - **Complete API Coverage** – All 60 Discogs API endpoints supported  
 - **Clean Parameter API** – Natural method calls: `getArtist(123)` with named parameter support
-- **Lightweight Focus** – ~750 lines for 60 endpoints (12 lines per endpoint average) with minimal dependencies
+- **Lightweight Focus** – Minimal codebase with only essential dependencies
 - **Modern PHP Comfort** – Full IDE support, type safety, PHPStan Level 8 without bloat
 - **Secure Authentication** – Full OAuth and Personal Access Token support
 - **Well Tested** – 100% test coverage, PSR-12 compliant
@@ -111,7 +111,7 @@ $identity = $discogs->getIdentity();
 - **User Wantlist Methods** – getUserWantlist(), addToWantlist(), updateWantlistItem(), removeFromWantlist()
 - **User Lists Methods** – getUserLists(), getUserList()
 
-*All 60 Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
+*All Discogs API endpoints are supported with clean documentation — see [Discogs API Documentation](https://www.discogs.com/developers/) for complete method reference*
 
 > 💡 **Note:** Some endpoints require special permissions (seller accounts, data ownership).
 
@@ -228,107 +228,6 @@ $identity = $discogs->getIdentity();
 echo "Hello " . $identity['username'];
 ```
 
-## 🧪 Testing
-
-### Quick Testing Commands
-
-```bash
-# Unit tests (fast, CI-compatible, no external dependencies)
-composer test
-
-# Integration tests (requires Discogs API credentials)
-composer test-integration
-
-# All tests together (unit + integration)
-composer test-all
-
-# Code coverage (HTML + XML reports)
-composer test-coverage
-```
-
-### Static Analysis & Code Quality
-
-```bash
-# Static analysis (PHPStan Level 8)
-composer analyse
-
-# Code style check (PSR-12)
-composer cs
-
-# Auto-fix code style
-composer cs-fix
-```
-
-### Test Strategy
-
-- **Unit Tests (101)**: Fast, reliable, no external dependencies → **CI default**
-- **Integration Tests (31)**: Real API calls, rate-limited → **Manual execution**  
-- **Total Coverage**: 100% lines, methods, and classes covered
-
-## 📚 API Documentation
-
-Complete method documentation available at [Discogs API Documentation](https://www.discogs.com/developers/).
-
-> ⚠️ **API Change Notice:** The `getReleaseStats()` endpoint format changed around 2024/2025. It now returns only `{"is_offensive": false}` instead of the documented `{"num_have": X, "num_want": Y}`. For community statistics, use `getRelease()` and access `community.have` and `community.want` instead. Our library handles both formats gracefully.
-
-### Most Used Methods
-
-| Method                        | Description      | Auth Level    |
-|-------------------------------|------------------|---------------|
-| `search()`                    | Database search  | 2️⃣+ Consumer |
-| `getArtist()`, `getRelease()` | Public data      | 1️⃣ None      |
-| `listCollectionFolders()`     | Your collections | 3️⃣+ Personal |  
-| `getIdentity()`               | User info        | 3️⃣+ Personal |
-| `getUserInventory()`          | Marketplace      | 3️⃣+ Personal |
-
-### Parameter Syntax Examples
-
-#### Traditional Positional Parameters
-
-```php
-// Good for methods with few parameters
-$artist = $discogs->getArtist(4470662); // Billie Eilish
-$release = $discogs->getRelease(30359313); // Happier Than Ever
-$results = $discogs->search('Taylor Swift', 'artist');
-$collection = $discogs->listCollectionItems('username', 0, 25);
-```
-
-#### Named Parameters (PHP 8.0+, Recommended)
-
-```php
-// Better for methods with many optional parameters
-$search = $discogs->search(
-    query: 'Olivia Rodrigo',
-    type: 'release',
-    year: 2021,
-    perPage: 50
-);
-
-$releases = $discogs->listArtistReleases(
-    artistId: 4470662,
-    sort: 'year',
-    sortOrder: 'desc',
-    perPage: 25
-);
-
-// Marketplace listing with named parameters
-$listing = $discogs->createMarketplaceListing(
-    releaseId: 30359313,
-    condition: 'Near Mint (NM or M-)',
-    price: 45.99,
-    status: 'For Sale',
-    comments: 'Rare pressing, excellent condition'
-);
-```
-
-#### Hybrid Approach
-
-```php
-// Mix positional for required, named for optional
-$search = $discogs->search('Ariana Grande', 'artist', perPage: 50);
-$releases = $discogs->listArtistReleases(4470662, sort: 'year', sortOrder: 'desc');
-```
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -337,7 +236,9 @@ $releases = $discogs->listArtistReleases(4470662, sort: 'year', sortOrder: 'desc
 4. Push to branch (`git push origin feature/name`)
 5. Open Pull Request
 
-Please follow PSR-12 standards and include tests.
+Contributions are welcome! See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed setup instructions, testing guide, and development workflow.
+
+Please follow PSR-12 standards and include tests for new features.
 
 ## 📄 License
 
