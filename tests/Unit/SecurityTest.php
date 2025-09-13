@@ -4,26 +4,17 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs\Tests\Unit;
 
-use Calliostro\Discogs\DiscogsApiClient;
+use Calliostro\Discogs\DiscogsClient;
 use Calliostro\Discogs\OAuthHelper;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionException;
 
-final class SecurityTest extends TestCase
+final class SecurityTest extends UnitTestCase
 {
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function jsonEncode(array $data): string
-    {
-        return json_encode($data) ?: '{}';
-    }
-
     /**
      * @throws ReflectionException If reflection operations fail
      */
@@ -34,7 +25,7 @@ final class SecurityTest extends TestCase
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);
-        $client = new DiscogsApiClient(['handler' => $handlerStack]);
+        $client = new DiscogsClient(['handler' => $handlerStack]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('URI too long');
@@ -65,6 +56,7 @@ final class SecurityTest extends TestCase
         $method->invoke($client, 'testLongUri', [['id' => '123']]);
     }
 
+
     /**
      * @throws ReflectionException If reflection operations fail
      */
@@ -75,7 +67,7 @@ final class SecurityTest extends TestCase
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);
-        $client = new DiscogsApiClient(['handler' => $handlerStack]);
+        $client = new DiscogsClient(['handler' => $handlerStack]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Too many placeholders in URI');
@@ -188,10 +180,10 @@ final class SecurityTest extends TestCase
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);
-        $client = new DiscogsApiClient(['handler' => $handlerStack]);
+        $client = new DiscogsClient(['handler' => $handlerStack]);
 
         // Normal, safe input should work fine
-        $result = $client->getArtist(['id' => '139250']);
+        $result = $client->getArtist(139250);
 
         $this->assertIsArray($result);
         $this->assertEquals(139250, $result['id']);
@@ -206,11 +198,11 @@ final class SecurityTest extends TestCase
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);
-        $client = new DiscogsApiClient(['handler' => $handlerStack]);
+        $client = new DiscogsClient(['handler' => $handlerStack]);
 
         // Make normal API calls that should pass security validation
-        $searchResult = $client->search(['q' => 'test']);
-        $artistResult = $client->getArtist(['id' => '139250']);
+        $searchResult = $client->search('test');
+        $artistResult = $client->getArtist(139250);
 
         $this->assertIsArray($searchResult);
         $this->assertEquals([], $searchResult['results']);

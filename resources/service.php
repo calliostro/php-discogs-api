@@ -8,16 +8,16 @@ return [
         // ===========================
         'getArtist' => [
             'httpMethod' => 'GET',
-            'uri' => 'artists/{id}',
+            'uri' => 'artists/{artist_id}',
             'parameters' => [
-                'id' => ['required' => true],
+                'artist_id' => ['required' => true],
             ],
         ],
         'listArtistReleases' => [
             'httpMethod' => 'GET',
-            'uri' => 'artists/{id}/releases',
+            'uri' => 'artists/{artist_id}/releases',
             'parameters' => [
-                'id' => ['required' => true],
+                'artist_id' => ['required' => true],
                 'sort' => ['required' => false],
                 'sort_order' => ['required' => false],
                 'per_page' => ['required' => false],
@@ -26,9 +26,9 @@ return [
         ],
         'getRelease' => [
             'httpMethod' => 'GET',
-            'uri' => 'releases/{id}',
+            'uri' => 'releases/{release_id}',
             'parameters' => [
-                'id' => ['required' => true],
+                'release_id' => ['required' => true],
                 'curr_abbr' => ['required' => false],
             ],
         ],
@@ -68,23 +68,23 @@ return [
         ],
         'getReleaseStats' => [
             'httpMethod' => 'GET',
-            'uri' => 'releases/{id}/stats',
+            'uri' => 'releases/{release_id}/stats',
             'parameters' => [
-                'id' => ['required' => true],
+                'release_id' => ['required' => true],
             ],
         ],
         'getMaster' => [
             'httpMethod' => 'GET',
-            'uri' => 'masters/{id}',
+            'uri' => 'masters/{master_id}',
             'parameters' => [
-                'id' => ['required' => true],
+                'master_id' => ['required' => true],
             ],
         ],
         'listMasterVersions' => [
             'httpMethod' => 'GET',
-            'uri' => 'masters/{id}/versions',
+            'uri' => 'masters/{master_id}/versions',
             'parameters' => [
-                'id' => ['required' => true],
+                'master_id' => ['required' => true],
                 'per_page' => ['required' => false],
                 'page' => ['required' => false],
                 'format' => ['required' => false],
@@ -97,16 +97,16 @@ return [
         ],
         'getLabel' => [
             'httpMethod' => 'GET',
-            'uri' => 'labels/{id}',
+            'uri' => 'labels/{label_id}',
             'parameters' => [
-                'id' => ['required' => true],
+                'label_id' => ['required' => true],
             ],
         ],
         'listLabelReleases' => [
             'httpMethod' => 'GET',
-            'uri' => 'labels/{id}/releases',
+            'uri' => 'labels/{label_id}/releases',
             'parameters' => [
-                'id' => ['required' => true],
+                'label_id' => ['required' => true],
                 'per_page' => ['required' => false],
                 'page' => ['required' => false],
             ],
@@ -185,12 +185,13 @@ return [
             'requiresAuth' => true,
             'parameters' => [
                 'listing_id' => ['required' => true],
-                'condition' => ['required' => false],
+                'release_id' => ['required' => true],
+                'condition' => ['required' => true],
                 'sleeve_condition' => ['required' => false],
-                'price' => ['required' => false],
+                'price' => ['required' => true],
                 'comments' => ['required' => false],
                 'allow_offers' => ['required' => false],
-                'status' => ['required' => false],
+                'status' => ['required' => true],
                 'external_id' => ['required' => false],
                 'location' => ['required' => false],
                 'weight' => ['required' => false],
@@ -204,6 +205,7 @@ return [
             'requiresAuth' => true,
             'parameters' => [
                 'listing_id' => ['required' => true],
+                'curr_abbr' => ['required' => false],
             ],
         ],
         'getMarketplaceOrder' => [

@@ -2,7 +2,7 @@
 
 namespace Calliostro\Discogs\Tests\Integration;
 
-use Calliostro\Discogs\DiscogsApiClient;
+use Calliostro\Discogs\DiscogsClient;
 use GuzzleHttp\Exception\ClientException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -16,7 +16,7 @@ use ReflectionException;
  */
 abstract class IntegrationTestCase extends TestCase
 {
-    protected DiscogsApiClient $client;
+    protected DiscogsClient $client;
 
     protected function setUp(): void
     {
@@ -24,8 +24,82 @@ abstract class IntegrationTestCase extends TestCase
 
         // Add delay between tests to respect API rate limits
         // Discogs API: 25 req/min unauthenticated (2.4s), 60 req/min authenticated (1s)
-        // Some tests make multiple API calls, so we use conservative 5s delay
-        sleep(5); // Conservative rate limiting for multiple requests per test
+        sleep(5);
+    }
+
+    /**
+     * Assert that the response contains required artist fields
+     *
+     * @param array<string, mixed> $artist
+     */
+    protected function assertValidArtistResponse(array $artist): void
+    {
+        $this->assertIsArray($artist);
+        $this->assertArrayHasKey('name', $artist);
+        $this->assertIsString($artist['name']);
+        $this->assertNotEmpty($artist['name']);
+    }
+
+    /**
+     * Assert that response contains required release fields
+     *
+     * @param array<string, mixed> $release
+     */
+    protected function assertValidReleaseResponse(array $release): void
+    {
+        $this->assertIsArray($release);
+        $this->assertArrayHasKey('title', $release);
+        $this->assertIsString($release['title']);
+        $this->assertNotEmpty($release['title']);
+    }
+
+    /**
+     * Assert that response contains required search result structure
+     *
+     * @param array<string, mixed> $searchResults
+     */
+    protected function assertValidSearchResponse(array $searchResults): void
+    {
+        $this->assertIsArray($searchResults);
+        $this->assertArrayHasKey('results', $searchResults);
+        $this->assertIsArray($searchResults['results']);
+    }
+
+    /**
+     * Assert that response contains valid pagination structure
+     *
+     * @param array<string, mixed> $response
+     */
+    protected function assertValidPaginationResponse(array $response): void
+    {
+        $this->assertArrayHasKey('pagination', $response);
+        $this->assertIsArray($response['pagination']);
+        $this->assertArrayHasKey('page', $response['pagination']);
+        $this->assertArrayHasKey('per_page', $response['pagination']);
+        $this->assertArrayHasKey('items', $response['pagination']);
+    }
+
+    /**
+     * Assert that the authentication header contains an expected OAuth format
+     */
+    protected function assertValidOAuthHeader(string $authHeader): void
+    {
+        $this->assertStringContainsString('OAuth', $authHeader);
+        $this->assertStringContainsString('oauth_consumer_key=', $authHeader);
+        $this->assertStringContainsString('oauth_token=', $authHeader);
+        $this->assertStringContainsString('oauth_signature_method=', $authHeader);
+        $this->assertStringContainsString('oauth_signature=', $authHeader);
+    }
+
+    /**
+     * Assert that the authentication header contains an expected Personal Access Token format
+     */
+    protected function assertValidPersonalTokenHeader(string $authHeader): void
+    {
+        $this->assertStringContainsString('Discogs', $authHeader);
+        $this->assertStringContainsString('token=', $authHeader);
+        $this->assertStringNotContainsString('key=', $authHeader);
+        $this->assertStringNotContainsString('secret=', $authHeader);
     }
 
     /**

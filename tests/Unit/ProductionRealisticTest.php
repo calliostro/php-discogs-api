@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs\Tests\Unit;
 
-use Calliostro\Discogs\DiscogsApiClient;
+use Calliostro\Discogs\DiscogsClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
@@ -14,33 +14,16 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 /**
  * Additional Production-Realistic Edge Cases
  * These tests simulate real-world scenarios that commonly cause issues in production
  */
-final class ProductionRealisticTest extends TestCase
+final class ProductionRealisticTest extends UnitTestCase
 {
-    private DiscogsApiClient $client;
+    private DiscogsClient $client;
     private MockHandler $mockHandler;
-
-    protected function setUp(): void
-    {
-        $this->mockHandler = new MockHandler();
-        $handlerStack = HandlerStack::create($this->mockHandler);
-        $guzzleClient = new Client(['handler' => $handlerStack]);
-        $this->client = new DiscogsApiClient($guzzleClient);
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function jsonEncode(array $data): string
-    {
-        return json_encode($data) ?: '{}';
-    }
 
     /**
      * Test 502 Bad Gateway - Very common with CDNs/Load Balancers
@@ -55,7 +38,7 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(ServerException::class);
         $this->expectExceptionMessage('502 Bad Gateway');
 
-        $this->client->getArtist(['id' => '1']);
+        $this->client->getArtist(1);
     }
 
     /**
@@ -73,8 +56,9 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('temporarily unavailable');
 
-        $this->client->search(['q' => 'Beatles']);
+        $this->client->search('Dua Lipa');
     }
+
 
     /**
      * Test CloudFlare errors (very common in production)
@@ -92,7 +76,7 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('A timeout occurred');
 
-        $this->client->getRelease(['id' => '1']);
+        $this->client->getRelease(1);
     }
 
     /**
@@ -105,17 +89,19 @@ final class ProductionRealisticTest extends TestCase
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
-            ->willThrowException(new RequestException(
-                'cURL error 28: Operation timed out after 30000 milliseconds',
-                new Request('GET', 'https://api.discogs.com/artists/1')
-            ));
+            ->willThrowException(
+                new RequestException(
+                    'cURL error 28: Operation timed out after 30000 milliseconds',
+                    new Request('GET', 'https://api.discogs.com/artists/1')
+                )
+            );
 
-        $client = new DiscogsApiClient($mockClient);
+        $client = new DiscogsClient($mockClient);
 
         $this->expectException(RequestException::class);
         $this->expectExceptionMessage('Operation timed out');
 
-        $client->getArtist(['id' => '1']);
+        $client->getArtist(1);
     }
 
     /**
@@ -127,17 +113,19 @@ final class ProductionRealisticTest extends TestCase
         $mockClient = $this->createMock(Client::class);
         $mockClient->expects($this->once())
             ->method('get')
-            ->willThrowException(new ConnectException(
-                'cURL error 60: SSL certificate problem: unable to get local issuer certificate',
-                new Request('GET', 'https://api.discogs.com/artists/1')
-            ));
+            ->willThrowException(
+                new ConnectException(
+                    'cURL error 60: SSL certificate problem: unable to get local issuer certificate',
+                    new Request('GET', 'https://api.discogs.com/artists/1')
+                )
+            );
 
-        $client = new DiscogsApiClient($mockClient);
+        $client = new DiscogsClient($mockClient);
 
         $this->expectException(ConnectException::class);
         $this->expectExceptionMessage('SSL certificate problem');
 
-        $client->getArtist(['id' => '1']);
+        $client->getArtist(1);
     }
 
     /**
@@ -153,7 +141,7 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response');
 
-        $this->client->getArtist(['id' => '1']);
+        $this->client->getArtist(1);
     }
 
     /**
@@ -165,7 +153,7 @@ final class ProductionRealisticTest extends TestCase
             new Response(200, [], $this->jsonEncode(['id' => 999999999999, 'name' => 'Test Artist']))
         );
 
-        $result = $this->client->getArtist(['id' => '999999999999']);
+        $result = $this->client->getArtist(999999999999);
 
         $this->assertIsArray($result);
         $this->assertEquals(999999999999, $result['id']);
@@ -181,7 +169,7 @@ final class ProductionRealisticTest extends TestCase
         );
 
         // Test with problematic characters that might break URL encoding
-        $result = $this->client->search(['q' => 'AC/DC & Friends: 100% "Greatest" Hits [Disc 1]']);
+        $result = $this->client->search('Post Malone: Hollywood\'s Bleeding [Deluxe]');
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('results', $result);
@@ -203,7 +191,7 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('scheduled maintenance');
 
-        $this->client->getArtist(['id' => '1']);
+        $this->client->getArtist(1);
     }
 
     /**
@@ -221,7 +209,7 @@ final class ProductionRealisticTest extends TestCase
             new Response(200, [], $this->jsonEncode(['data' => $nested]))
         );
 
-        $result = $this->client->getArtist(['id' => '1']);
+        $result = $this->client->getArtist(1);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('data', $result);
@@ -242,7 +230,7 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid JSON response');
 
-        $this->client->getArtist(['id' => '1']);
+        $this->client->getArtist(1);
     }
 
     /**
@@ -260,6 +248,14 @@ final class ProductionRealisticTest extends TestCase
         $this->expectException(ServerException::class);
         $this->expectExceptionMessage('500 Internal Server Error');
 
-        $this->client->getArtist(['id' => '1']);
+        $this->client->getArtist(1);
+    }
+
+    protected function setUp(): void
+    {
+        $this->mockHandler = new MockHandler();
+        $handlerStack = HandlerStack::create($this->mockHandler);
+        $guzzleClient = new Client(['handler' => $handlerStack]);
+        $this->client = new DiscogsClient($guzzleClient);
     }
 }

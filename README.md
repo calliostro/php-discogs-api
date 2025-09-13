@@ -1,4 +1,4 @@
-# ⚡ Discogs API Client for PHP 8.1+ – Ultra-Lightweight
+# ⚡ Discogs API Client for PHP 8.1+ – Lightweight with Maximum Developer Comfort
 
 [![Package Version](https://img.shields.io/packagist/v/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
 [![Total Downloads](https://img.shields.io/packagist/dt/calliostro/php-discogs-api.svg)](https://packagist.org/packages/calliostro/php-discogs-api)
@@ -10,7 +10,7 @@
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://phpstan.org/)
 [![Code Style](https://img.shields.io/badge/code%20style-PSR12-brightgreen.svg)](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
-> **🚀 ULTRA-LIGHTWEIGHT!** Zero bloat, maximum performance Discogs API client powered by Guzzle.
+> **🚀 MINIMAL YET POWERFUL!** Focused ~750-line Discogs API client — as lightweight as possible while maintaining modern PHP comfort and clean APIs.
 
 ## 📦 Installation
 
@@ -37,32 +37,55 @@ composer require calliostro/php-discogs-api
 
 ```php
 // Public data (no registration needed)
-$discogs = ClientFactory::create();
-$artist = $discogs->getArtist(['id' => '1']);
+$discogs = DiscogsClientFactory::create();
+$artist = $discogs->getArtist(5590213); // Billie Eilish
+$release = $discogs->getRelease(19929817); // Olivia Rodrigo - Sour
+$label = $discogs->getLabel(2311); // Interscope Records
 
-// Search (consumer credentials)
-$discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
-$results = $discogs->search(['q' => 'Daft Punk']);
+// Search (consumer credentials) - Modern parameter styles
+$discogs = DiscogsClientFactory::createWithConsumerCredentials('key', 'secret');
+
+// Positional parameters (traditional)
+$results = $discogs->search('Billie Eilish', 'artist');
+$releases = $discogs->listArtistReleases(4470662, 'year', 'desc', 50);
+
+// Named parameters (PHP 8.0+, recommended for clarity)
+$results = $discogs->search(query: 'Taylor Swift', type: 'release');
+$releases = $discogs->listArtistReleases(
+    artistId: 4470662,
+    sort: 'year', 
+    sortOrder: 'desc',
+    perPage: 25
+);
 
 // Your collections (personal token)  
-$discogs = ClientFactory::createWithPersonalAccessToken('token');
-$collection = $discogs->listCollectionFolders(['username' => 'you']);
+$discogs = DiscogsClientFactory::createWithPersonalAccessToken('token');
+$collection = $discogs->listCollectionFolders('your-username');
+$wantlist = $discogs->getUserWantlist('your-username');
+
+// Add to collection with named parameters
+$discogs->addToCollection(
+    username: 'your-username',
+    folderId: 1,
+    releaseId: 30359313
+);
 
 // Multi-user apps (OAuth)
-$discogs = ClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
+$discogs = DiscogsClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
 $identity = $discogs->getIdentity();
 ```
 
 ## ✨ Key Features
 
-- **Ultra-Lightweight** – Minimal dependencies, simple architecture
-- **Complete API Coverage** – All 60 Discogs API endpoints supported
-- **Direct API Calls** – `$client->getArtist()` maps to `/artists/{id}`, no abstractions
-- **Type Safe + IDE Support** – Full PHP 8.1+ types, PHPStan Level 8, method autocomplete
-- **Future-Ready** – PHP 8.5 compatible (beta/dev testing)
-- **Pure Guzzle** – Modern HTTP client, no custom transport layers
-- **Well Tested** – 100% test coverage, PSR-12 compliant
+- **Simple Setup** – Works immediately with public data, easy authentication for advanced features
+- **Complete API Coverage** – All 60 Discogs API endpoints supported  
+- **Clean Parameter API** – Natural method calls: `getArtist(123)` with named parameter support
+- **Lightweight Focus** – ~750 lines for 60 endpoints (12 lines per endpoint average) with minimal dependencies
+- **Modern PHP Comfort** – Full IDE support, type safety, PHPStan Level 8 without bloat
 - **Secure Authentication** – Full OAuth and Personal Access Token support
+- **Well Tested** – 100% test coverage, PSR-12 compliant
+- **Future-Ready** – PHP 8.1–8.5 compatible (beta/dev testing)
+- **Pure Guzzle** – Modern HTTP client, no custom transport layers
 
 ## 🎵 All Discogs API Methods as Direct Calls
 
@@ -88,12 +111,12 @@ $identity = $discogs->getIdentity();
 
 ### Option 1: Simple Configuration (Recommended)
 
-For basic customizations like timeout or User-Agent, use the ClientFactory:
+For basic customizations like timeout or User-Agent, use the DiscogsClientFactory:
 
 ```php
-use Calliostro\Discogs\ClientFactory;
+use Calliostro\Discogs\DiscogsClientFactory;
 
-$discogs = ClientFactory::create([
+$discogs = DiscogsClientFactory::create([
     'timeout' => 30,
     'headers' => [
         'User-Agent' => 'MyApp/1.0 (+https://myapp.com)',
@@ -107,7 +130,8 @@ For advanced HTTP client features (middleware, interceptors, etc.), create your 
 
 ```php
 use GuzzleHttp\Client;
-use Calliostro\Discogs\DiscogsApiClient;
+use Calliostro\Discogs\DiscogsClient;
+use Calliostro\Discogs\DiscogsClientFactory;
 
 $httpClient = new Client([
     'base_uri' => 'https://api.discogs.com/',
@@ -119,10 +143,10 @@ $httpClient = new Client([
 ]);
 
 // Direct usage
-$discogs = new DiscogsApiClient($httpClient);
+$discogs = new DiscogsClient($httpClient);
 
-// Or via ClientFactory
-$discogs = ClientFactory::create($httpClient);
+// Or via DiscogsClientFactory
+$discogs = DiscogsClientFactory::create($httpClient);
 ```
 
 > 💡 **Note:** By default, the client uses `DiscogsClient/4.0.0 +https://github.com/calliostro/php-discogs-api` as User-Agent. You can override this by setting custom headers as shown above.
@@ -144,19 +168,19 @@ Get credentials at [Discogs Developer Settings](https://www.discogs.com/settings
 
 ```php
 // Level 1: Public data only
-$discogs = ClientFactory::create();
+$discogs = DiscogsClientFactory::create();
 
 // Level 2: Search enabled
-$discogs = ClientFactory::createWithConsumerCredentials('key', 'secret');
-$results = $discogs->search(['q' => 'Taylor Swift']);
+$discogs = DiscogsClientFactory::createWithConsumerCredentials('key', 'secret');
+$results = $discogs->search('Taylor Swift');
 
 // Level 3: Your account access (most common)
-$discogs = ClientFactory::createWithPersonalAccessToken('token');
-$folders = $discogs->listCollectionFolders(['username' => 'you']);
-$wantlist = $discogs->getUserWantlist(['username' => 'you']);
+$discogs = DiscogsClientFactory::createWithPersonalAccessToken('token');
+$folders = $discogs->listCollectionFolders('you');
+$wantlist = $discogs->getUserWantlist('you');
 
 // Level 4: Multi-user apps
-$discogs = ClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
+$discogs = DiscogsClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
 ```
 
 ### Complete OAuth Flow Example
@@ -192,7 +216,7 @@ exit;
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Calliostro\Discogs\{OAuthHelper, ClientFactory};
+use Calliostro\Discogs\{OAuthHelper, DiscogsClientFactory};
 
 $consumerKey = 'your-consumer-key';
 $consumerSecret = 'your-consumer-secret';
@@ -214,10 +238,29 @@ $oauthSecret = $accessToken['oauth_token_secret'];
 $_SESSION['oauth_token'] = $oauthToken;
 $_SESSION['oauth_token_secret'] = $oauthSecret;
 
-$discogs = ClientFactory::createWithOAuth($consumerKey, $consumerSecret, $oauthToken, $oauthSecret);
+$discogs = DiscogsClientFactory::createWithOAuth($consumerKey, $consumerSecret, $oauthToken, $oauthSecret);
 $identity = $discogs->getIdentity();
 echo "Hello " . $identity['username'];
 ```
+
+## 🛡️ Rate Limiting (Optional)
+
+Quick demo for handling Discogs rate limits (60/min authenticated, 25/min unauthenticated) with Guzzle middleware:
+
+```php
+use GuzzleHttp\{HandlerStack, Middleware};
+use Calliostro\Discogs\DiscogsClientFactory;
+
+$handler = HandlerStack::create();
+$handler->push(Middleware::retry(
+    fn ($retries, $request, $response) => $retries < 3 && $response?->getStatusCode() === 429,
+    fn ($retries) => 1000 * 2 ** ($retries + 1) // 2s, 4s, 8s delays
+), 'rate_limit');
+
+$discogs = DiscogsClientFactory::create(['handler' => $handler]);
+```
+
+> 💡 **Note:** For long-running batches, consider optimized solutions with retry backoff caps to prevent exponentially increasing delays.
 
 ## 🧪 Testing
 
@@ -272,6 +315,54 @@ Complete method documentation available at [Discogs API Documentation](https://w
 | `getIdentity()`               | User info        | 3️⃣+ Personal |
 | `getUserInventory()`          | Marketplace      | 3️⃣+ Personal |
 
+### Parameter Syntax Examples
+
+#### Traditional Positional Parameters
+
+```php
+// Good for methods with few parameters
+$artist = $discogs->getArtist(4470662); // Billie Eilish
+$release = $discogs->getRelease(30359313); // Happier Than Ever
+$results = $discogs->search('Taylor Swift', 'artist');
+$collection = $discogs->listCollectionItems('username', 0, 25);
+```
+
+#### Named Parameters (PHP 8.0+, Recommended)
+
+```php
+// Better for methods with many optional parameters
+$search = $discogs->search(
+    query: 'Olivia Rodrigo',
+    type: 'release',
+    year: 2021,
+    perPage: 50
+);
+
+$releases = $discogs->listArtistReleases(
+    artistId: 4470662,
+    sort: 'year',
+    sortOrder: 'desc',
+    perPage: 25
+);
+
+// Marketplace listing with named parameters
+$listing = $discogs->createMarketplaceListing(
+    releaseId: 30359313,
+    condition: 'Near Mint (NM or M-)',
+    price: 45.99,
+    status: 'For Sale',
+    comments: 'Rare pressing, excellent condition'
+);
+```
+
+#### Hybrid Approach
+
+```php
+// Mix positional for required, named for optional
+$search = $discogs->search('Ariana Grande', 'artist', perPage: 50);
+$releases = $discogs->listArtistReleases(4470662, sort: 'year', sortOrder: 'desc');
+```
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -291,5 +382,7 @@ MIT License – see [LICENSE](LICENSE) file.
 - [Discogs](https://www.discogs.com/) for the excellent API
 - [Guzzle](https://docs.guzzlephp.org/) for an HTTP client  
 - Previous PHP Discogs implementations for inspiration
+
+---
 
 > ⭐ **Star this repo if you find it useful!**

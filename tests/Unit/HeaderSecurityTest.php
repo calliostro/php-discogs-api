@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs\Tests\Unit;
 
-use Calliostro\Discogs\ClientFactory;
+use Calliostro\Discogs\DiscogsClientFactory;
 use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
-use PHPUnit\Framework\TestCase;
 
-final class HeaderSecurityTest extends TestCase
+final class HeaderSecurityTest extends UnitTestCase
 {
     public function testUserCannotOverrideAuthorizationWithPersonalAccessToken(): void
     {
@@ -25,7 +24,7 @@ final class HeaderSecurityTest extends TestCase
         $handlerStack->push(Middleware::history($history));
 
         // User tries to override Authorization header
-        $client = ClientFactory::createWithPersonalAccessToken(
+        $client = DiscogsClientFactory::createWithPersonalAccessToken(
             'token789',
             [
                 'handler' => $handlerStack,
@@ -37,16 +36,14 @@ final class HeaderSecurityTest extends TestCase
             ]
         );
 
-        $client->search(['query' => 'test']);
+        $client->search('test');
 
         $request = $history[0]['request'];
 
-        // Our Authorization header should override the user's malicious attempt
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringStartsWith('Discogs token=token789', $authHeader);
+        $this->assertValidPersonalTokenHeader($authHeader);
+        $this->assertStringContainsString('token789', $authHeader);
         $this->assertStringNotContainsString('Bearer malicious-token', $authHeader);
-
-        // User's other headers should be preserved
         $this->assertSame('MyApp/1.0', $request->getHeaderLine('User-Agent'));
         $this->assertSame('custom-value', $request->getHeaderLine('X-Custom'));
     }
@@ -65,7 +62,7 @@ final class HeaderSecurityTest extends TestCase
         $handlerStack->push(Middleware::history($history));
 
         // User tries to override Authorization header
-        $client = ClientFactory::createWithOAuth(
+        $client = DiscogsClientFactory::createWithOAuth(
             'key123',
             'secret456',
             'token789',
@@ -83,12 +80,9 @@ final class HeaderSecurityTest extends TestCase
 
         $request = $history[0]['request'];
 
-        // Our OAuth Authorization header should override the user's malicious attempt
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringStartsWith('OAuth', $authHeader);
+        $this->assertValidOAuthHeader($authHeader);
         $this->assertStringNotContainsString('Basic malicious-credentials', $authHeader);
-
-        // User's other headers should be preserved
         $this->assertEquals('application/json', $request->getHeaderLine('Accept'));
     }
 
@@ -102,7 +96,7 @@ final class HeaderSecurityTest extends TestCase
         $history = [];
         $handlerStack->push(Middleware::history($history));
 
-        $client = ClientFactory::createWithPersonalAccessToken(
+        $client = DiscogsClientFactory::createWithPersonalAccessToken(
             'token789',
             [
                 'handler' => $handlerStack,
@@ -115,14 +109,13 @@ final class HeaderSecurityTest extends TestCase
             ]
         );
 
-        $client->search(['query' => 'test']);
+        $client->search('test');
 
         $request = $history[0]['request'];
 
-        // Our authentication should be present
-        $this->assertStringStartsWith('Discogs token=token789', $request->getHeaderLine('Authorization'));
-
-        // All user headers should be preserved
+        $authHeader = $request->getHeaderLine('Authorization');
+        $this->assertValidPersonalTokenHeader($authHeader);
+        $this->assertStringContainsString('token789', $authHeader);
         $this->assertSame('CustomApp/2.0', $request->getHeaderLine('User-Agent'));
         $this->assertEquals('application/json', $request->getHeaderLine('Accept'));
         $this->assertEquals('v2', $request->getHeaderLine('X-API-Version'));

@@ -14,26 +14,15 @@ use RuntimeException;
  */
 final class OAuthHelper
 {
+    // Performance constant for nonce generation
+    private const NONCE_BYTES = 16;
+
     private GuzzleClient $client;
-
-    /** @var array<string, mixed>|null Cached service configuration */
-    private static ?array $cachedConfig = null;
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function getConfig(): array
-    {
-        if (self::$cachedConfig === null) {
-            self::$cachedConfig = require __DIR__ . '/../resources/service.php';
-        }
-        return self::$cachedConfig;
-    }
 
     public function __construct(?GuzzleClient $client = null)
     {
         if ($client === null) {
-            $config = self::getConfig();
+            $config = ConfigCache::get();
             $this->client = new GuzzleClient([
                 'base_uri' => $config['baseUrl'],
                 'headers' => $config['client']['options']['headers']
@@ -60,7 +49,7 @@ final class OAuthHelper
             'oauth_consumer_key' => $consumerKey,
             'oauth_nonce' => $this->generateNonce(),
             'oauth_signature_method' => 'PLAINTEXT',
-            'oauth_timestamp' => (string) time(),
+            'oauth_timestamp' => (string)time(),
             'oauth_callback' => $callbackUrl,
             'oauth_version' => '1.0',
         ];
@@ -91,6 +80,29 @@ final class OAuthHelper
             'oauth_token_secret' => $result['oauth_token_secret'],
             'oauth_callback_confirmed' => $callbackConfirmed
         ];
+    }
+
+    /**
+     * Generate cryptographically secure OAuth nonce
+     *
+     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
+     */
+    private function generateNonce(): string
+    {
+        return bin2hex(random_bytes(self::NONCE_BYTES)); // Cryptographically secure nonce
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    private function buildAuthorizationHeader(array $params): string
+    {
+        $parts = [];
+        foreach ($params as $key => $value) {
+            $parts[] = $key . '="' . rawurlencode($value) . '"';
+        }
+
+        return 'OAuth ' . implode(', ', $parts);
     }
 
     /**
@@ -130,7 +142,7 @@ final class OAuthHelper
             'oauth_verifier' => $verifier,
             'oauth_nonce' => $this->generateNonce(),
             'oauth_signature_method' => 'PLAINTEXT',
-            'oauth_timestamp' => (string) time(),
+            'oauth_timestamp' => (string)time(),
             'oauth_version' => '1.0',
         ];
 
@@ -154,28 +166,5 @@ final class OAuthHelper
             'oauth_token' => $result['oauth_token'],
             'oauth_token_secret' => $result['oauth_token_secret']
         ];
-    }
-
-    /**
-     * Generate cryptographically secure OAuth nonce
-     *
-     * @throws Exception If secure random number generation fails (PHP 8.2+: \Random\RandomException)
-     */
-    private function generateNonce(): string
-    {
-        return bin2hex(random_bytes(16)); // Cryptographically secure nonce
-    }
-
-    /**
-     * @param array<string, string> $params
-     */
-    private function buildAuthorizationHeader(array $params): string
-    {
-        $parts = [];
-        foreach ($params as $key => $value) {
-            $parts[] = $key . '="' . rawurlencode($value) . '"';
-        }
-
-        return 'OAuth ' . implode(', ', $parts);
     }
 }

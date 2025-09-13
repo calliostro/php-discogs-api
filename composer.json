@@ -1,6 +1,6 @@
 {
     "name": "calliostro/php-discogs-api",
-    "description": "Ultra-lightweight Discogs API client for PHP 8.1+ with modern Guzzle-based implementation — Minimal dependencies, zero bloat",
+    "description": "Lightweight Discogs API client for PHP 8.1+ with modern developer comfort — Clean parameter API and minimal dependencies",
     "type": "library",
     "keywords": [
         "php",
@@ -14,7 +14,10 @@
         "guzzle",
         "library",
         "php8",
-        "lightweight"
+        "lightweight",
+        "clean-api",
+        "modern-php",
+        "minimal-dependencies"
     ],
     "license": "MIT",
     "authors": [

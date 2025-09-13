@@ -10,43 +10,28 @@ use GuzzleHttp\Client as GuzzleClient;
 /**
  * Simple factory for creating Discogs clients with proper authentication
  */
-final class ClientFactory
+final class DiscogsClientFactory
 {
-    /** @var array<string, mixed>|null Cached service configuration to avoid multiple file reads */
-    private static ?array $cachedConfig = null;
-
-    /**
-     * Get cached service configuration
-     * @return array<string, mixed>
-     */
-    private static function getConfig(): array
-    {
-        if (self::$cachedConfig === null) {
-            self::$cachedConfig = require __DIR__ . '/../resources/service.php';
-        }
-        return self::$cachedConfig;
-    }
-
     /**
      * Create a basic unauthenticated Discogs client
      *
      * @param array<string, mixed>|GuzzleClient $optionsOrClient
      */
-    public static function create(array|GuzzleClient $optionsOrClient = []): DiscogsApiClient
+    public static function create(array|GuzzleClient $optionsOrClient = []): DiscogsClient
     {
         // If GuzzleClient is passed directly, return it as-is
         if ($optionsOrClient instanceof GuzzleClient) {
-            return new DiscogsApiClient($optionsOrClient);
+            return new DiscogsClient($optionsOrClient);
         }
 
-        $config = self::getConfig();
+        $config = ConfigCache::get();
 
         // Merge user options with base configuration
         $clientOptions = array_merge($optionsOrClient, [
             'base_uri' => $config['baseUrl'],
         ]);
 
-        return new DiscogsApiClient(new GuzzleClient($clientOptions));
+        return new DiscogsClient(new GuzzleClient($clientOptions));
     }
 
     /**
@@ -67,11 +52,11 @@ final class ClientFactory
         string $accessToken,
         string $accessTokenSecret,
         array|GuzzleClient $optionsOrClient = []
-    ): DiscogsApiClient {
+    ): DiscogsClient {
         // If GuzzleClient is passed directly, return it as-is
         // This allows full control over authentication for advanced users
         if ($optionsOrClient instanceof GuzzleClient) {
-            return new DiscogsApiClient($optionsOrClient);
+            return new DiscogsClient($optionsOrClient);
         }
 
         // Generate OAuth 1.0a parameters as per RFC 5849
@@ -80,26 +65,48 @@ final class ClientFactory
             'oauth_token' => $accessToken,
             'oauth_nonce' => bin2hex(random_bytes(16)),
             'oauth_signature_method' => 'PLAINTEXT',
-            'oauth_timestamp' => (string) time(),
+            'oauth_timestamp' => (string)time(),
             'oauth_version' => '1.0',
         ];
 
         // Create signature as per RFC 5849 Section 3.4.4 (PLAINTEXT)
         $oauthParams['oauth_signature'] = rawurlencode($consumerSecret) . '&' . rawurlencode($accessTokenSecret);
 
-        // Build Authorization header as per RFC 5849 Section 3.5.1
+        // Build Authorization header as per RFC 5849 Section 3.5.1 (optimized)
         $authParts = [];
         foreach ($oauthParams as $key => $value) {
             // oauth_signature is already properly encoded, don't double-encode it
-            if ($key === 'oauth_signature') {
-                $authParts[] = $key . '="' . $value . '"';
-            } else {
-                $authParts[] = $key . '="' . rawurlencode($value) . '"';
-            }
+            $authParts[] = $key === 'oauth_signature'
+                ? $key . '="' . $value . '"'
+                : $key . '="' . rawurlencode($value) . '"';
         }
         $authHeader = 'OAuth ' . implode(', ', $authParts);
 
         return self::createClientWithAuth($authHeader, $optionsOrClient);
+    }
+
+    /**
+     * Internal helper to create authenticated clients with secure header handling
+     *
+     * @param string $authHeader Authorization header value
+     * @param array<string, mixed> $optionsOrClient User options
+     */
+    private static function createClientWithAuth(string $authHeader, array $optionsOrClient): DiscogsClient
+    {
+        $config = ConfigCache::get();
+
+        // Merge user options but ALWAYS override the Authorization header for security
+        $clientOptions = array_merge($optionsOrClient, [
+            'base_uri' => $config['baseUrl'],
+        ]);
+
+        // Ensure our authentication headers take priority over user-provided ones
+        $clientOptions['headers'] = array_merge(
+            $optionsOrClient['headers'] ?? [],
+            ['Authorization' => $authHeader]
+        );
+
+        return new DiscogsClient(new GuzzleClient($clientOptions));
     }
 
     /**
@@ -114,11 +121,11 @@ final class ClientFactory
         string $consumerKey,
         string $consumerSecret,
         array|GuzzleClient $optionsOrClient = []
-    ): DiscogsApiClient {
+    ): DiscogsClient {
         // If GuzzleClient is passed directly, return it as-is
         // This allows full control over authentication for advanced users
         if ($optionsOrClient instanceof GuzzleClient) {
-            return new DiscogsApiClient($optionsOrClient);
+            return new DiscogsClient($optionsOrClient);
         }
 
         // Discogs format for consumer credentials only
@@ -137,11 +144,11 @@ final class ClientFactory
     public static function createWithPersonalAccessToken(
         string $personalAccessToken,
         array|GuzzleClient $optionsOrClient = []
-    ): DiscogsApiClient {
+    ): DiscogsClient {
         // If GuzzleClient is passed directly, return it as-is
         // This allows full control over authentication for advanced users
         if ($optionsOrClient instanceof GuzzleClient) {
-            return new DiscogsApiClient($optionsOrClient);
+            return new DiscogsClient($optionsOrClient);
         }
 
         // Discogs-specific authentication format for Personal Access Tokens
@@ -149,29 +156,5 @@ final class ClientFactory
         $authHeader = 'Discogs token=' . $personalAccessToken;
 
         return self::createClientWithAuth($authHeader, $optionsOrClient);
-    }
-
-    /**
-     * Internal helper to create authenticated clients with secure header handling
-     *
-     * @param string $authHeader Authorization header value
-     * @param array<string, mixed> $optionsOrClient User options
-     */
-    private static function createClientWithAuth(string $authHeader, array $optionsOrClient): DiscogsApiClient
-    {
-        $config = self::getConfig();
-
-        // Merge user options but ALWAYS override the Authorization header for security
-        $clientOptions = array_merge($optionsOrClient, [
-            'base_uri' => $config['baseUrl'],
-        ]);
-
-        // Ensure our authentication headers take priority over user-provided ones
-        $clientOptions['headers'] = array_merge(
-            $optionsOrClient['headers'] ?? [],
-            ['Authorization' => $authHeader]
-        );
-
-        return new DiscogsApiClient(new GuzzleClient($clientOptions));
     }
 }

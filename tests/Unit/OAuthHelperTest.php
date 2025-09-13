@@ -12,13 +12,12 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 /**
  * @covers \Calliostro\Discogs\OAuthHelper
  */
-final class OAuthHelperTest extends TestCase
+final class OAuthHelperTest extends UnitTestCase
 {
     public function testGetAuthorizationUrl(): void
     {
@@ -37,7 +36,11 @@ final class OAuthHelperTest extends TestCase
     public function testGetRequestTokenSuccess(): void
     {
         $mockHandler = new MockHandler([
-            new Response(200, [], 'oauth_token=request_token&oauth_token_secret=request_secret&oauth_callback_confirmed=true')
+            new Response(
+                200,
+                [],
+                'oauth_token=request_token&oauth_token_secret=request_secret&oauth_callback_confirmed=true'
+            )
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);
@@ -104,7 +107,13 @@ final class OAuthHelperTest extends TestCase
         $guzzleClient = new Client(['handler' => $handlerStack]);
 
         $helper = new OAuthHelper($guzzleClient);
-        $result = $helper->getAccessToken('consumer_key', 'consumer_secret', 'request_token', 'request_secret', 'verifier');
+        $result = $helper->getAccessToken(
+            'consumer_key',
+            'consumer_secret',
+            'request_token',
+            'request_secret',
+            'verifier'
+        );
 
         $this->assertSame('access_token', $result['oauth_token']);
         $this->assertSame('access_secret', $result['oauth_token_secret']);
@@ -156,7 +165,11 @@ final class OAuthHelperTest extends TestCase
     public function testGetRequestTokenHandlesNonStringCallbackConfirmed(): void
     {
         $mockHandler = new MockHandler([
-            new Response(200, [], 'oauth_token=request_token&oauth_token_secret=request_secret&oauth_callback_confirmed[]=array')
+            new Response(
+                200,
+                [],
+                'oauth_token=request_token&oauth_token_secret=request_secret&oauth_callback_confirmed[]=array'
+            )
         ]);
 
         $handlerStack = HandlerStack::create($mockHandler);

@@ -5,35 +5,128 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0-beta.1](https://github.com/calliostro/php-discogs-api/releases/tag/v4.0.0-beta.1) – 2025-09-10
+## [4.0.0-beta](https://github.com/calliostro/php-discogs-api/releases/tag/v4.0.0-beta.2) – 2025-09-13
 
-### Added
+### 🚀 Complete Library Redesign – v4.0 is a Fresh Start
 
-- **RFC 5849 compliant OAuth 1.0a** implementation with PLAINTEXT signatures
-- **Integration tests** for authentication validation  
-- **Static header authentication** replacing complex middleware
-- **Complete OAuth 1.0a Support** with dedicated `OAuthHelper` class
-- **Consistent Method Naming** following `get*()`, `list*()`, `create*()`, `update*()`, `delete*()` patterns
-- **Performance optimizations** with config caching and reduced file I/O
-- **Enhanced Security** with cryptographically secure nonce generation and ReDoS protection
-- **CI/CD Integration** with automatic rate limiting and retry logic for integration tests
+**v4.0.0** represents a fundamental architectural overhaul. This is not an incremental update – it's a complete rewrite prioritizing developer experience, type safety, and minimal code footprint.
 
-### Changed
+### Breaking Changes from v3.x
 
-- **BREAKING**: Authentication completely rewritten – now secure and RFC-compliant
-- **BREAKING**: All method names changed for consistency (see UPGRADE.md)
-- **Enhanced**: User headers preserved but authentication headers protected from override
-- **Enhanced**: HTTP exceptions now pass through unchanged for better error transparency
-- **Enhanced**: Improved input validation with ReDoS attack prevention
+#### 1. Class Renaming for Consistency
 
-### Removed
+- `DiscogsApiClient` → `DiscogsClient`
+- `ClientFactory` → `DiscogsClientFactory`
 
-- **BREAKING**: No backward compatibility with v3.x method names
+#### 2. Method Naming Revolution
 
-### Migration
+**All 60 API methods renamed** following consistent `verb + noun` patterns:
 
-- See [UPGRADE.md](UPGRADE.md) for a complete migration guide with method mapping tables
-- **Parameters, Authentication, Return Values**: All unchanged
+- `artistGet()` → `getArtist()`
+- `artistReleases()` → `listArtistReleases()`
+- `releaseGet()` → `getRelease()`
+- `userEdit()` → `updateUser()`
+- `collectionFolders()` → `listCollectionFolders()`
+- `inventoryGet()` → `getUserInventory()`
+- `listingCreate()` → `createMarketplaceListing()`
+- `ordersGet()` → `getMarketplaceOrders()`
+
+#### 3. Clean Parameter API (No More Arrays)
+
+**Revolutionary method signatures** eliminate array parameters entirely:
+
+```php
+// v3.x (OLD)
+$artist = $discogs->artistGet(['id' => 5590213]);
+$search = $discogs->search(['q' => 'Billie Eilish', 'type' => 'artist', 'per_page' => 50]);
+$collection = $discogs->collectionItems(['username' => 'user', 'folder_id' => 0]);
+
+// v4.0 (NEW) - Clean parameters
+$artist = $discogs->getArtist(5590213);
+$search = $discogs->search(query: 'Billie Eilish', type: 'artist', perPage: 50);
+$collection = $discogs->listCollectionItems(username: 'user', folderId: 0);
+```
+
+#### 4. Enhanced Authentication Architecture
+
+**Complete authentication rewrite** with proper security standards:
+
+- **Personal Access Token**: Now requires consumer credentials for proper Discogs Auth format
+- **OAuth 1.0a**: RFC 5849 compliant with PLAINTEXT signatures
+- **Method Renaming**: `createWithToken()` → `createWithPersonalAccessToken()`
+
+```php
+// v3.x (OLD)
+$discogs = ClientFactory::createWithToken('token');
+
+// v4.0 (NEW)
+$discogs = DiscogsClientFactory::createWithPersonalAccessToken('key', 'secret', 'token');
+```
+
+### What's New in v4.0
+
+#### Revolutionary Developer Experience
+
+- **Zero Array Parameters** – Direct method calls: `getArtist(123)` vs `getArtist(['id' => 123])`
+- **Perfect IDE Autocomplete** – Full IntelliSense support with typed parameters
+- **Type Safety** – Automatic parameter validation and conversion (DateTime, booleans, objects)
+- **Self-Documenting Code** – Method names clearly indicate action and resource
+
+#### Ultra-Lightweight Architecture
+
+- **~750 Lines Total** – Minimal codebase covering all 60 Discogs API endpoints
+- **2 Core Classes** – `DiscogsClient` and `DiscogsClientFactory` handle everything
+- **Zero Bloat** – No unnecessary abstractions or complex inheritance hierarchies
+- **Direct API Mapping** – Each method maps 1:1 to a Discogs endpoint
+
+#### Enterprise-Grade Security
+
+- **RFC 5849 OAuth 1.0a** – Industry-standard OAuth implementation
+- **Secure Nonce Generation** – Cryptographically secure random values
+- **ReDoS Protection** – Input validation prevents regular expression attacks
+- **Proper Authentication Headers** – Discogs-compliant auth format
+
+#### Comprehensive Type Safety
+
+- **Strict Parameter Validation** – Only camelCase parameters from PHPDoc accepted
+- **Automatic Type Conversion** – DateTime → ISO 8601, boolean → "1"/"0" for queries
+- **Required Parameter Enforcement** – `null` values rejected for required parameters
+- **Object Support** – Custom objects with `__toString()` method automatically converted
+
+### Migration Impact
+
+**This is a complete breaking change.** Every method call in your codebase will need updating:
+
+1. **Update class names**: `DiscogsApiClient` → `DiscogsClient`, `ClientFactory` → `DiscogsClientFactory`
+2. **Update method names**: Use the complete mapping table in [UPGRADE.md](UPGRADE.md)
+3. **Remove all arrays**: Convert array parameters to positional parameters
+4. **Update authentication**: Personal tokens now require consumer credentials
+
+### Design Goals
+
+**v4.0 prioritizes long-term developer experience:**
+
+- **Cleaner Code**: Direct method calls without array parameters
+- **Better IDE Support**: Full autocomplete and type checking
+- **Consistent API**: All methods follow the same naming pattern
+- **Type Safety**: Catch errors at development time, not runtime
+
+### Added Features
+
+- **Complete OAuth 1.0a Support** with `OAuthHelper` class for full authorization flows
+- **Enhanced Error Handling** with clear exception messages for migration issues
+- **Integration Test Suite** with comprehensive authentication level testing
+- **CI/CD Integration** with automatic rate limiting and retry logic
+- **Static Analysis** – PHPStan Level 8 compliance with zero errors
+- **Performance Optimizations** – Config caching and reduced file I/O operations
+- **Consistent Class Naming** – `DiscogsClient` and `DiscogsClientFactory` for better clarity
+
+### Migration Resources
+
+- **Complete Method Mapping**: See [UPGRADE.md](UPGRADE.md) for all 60 method name changes
+- **Parameter Examples**: Detailed before/after code samples for common operations
+- **Authentication Guide**: Step-by-step migration for all authentication types
+- **Automated Scripts**: Bash/sed commands to help identify and replace common patterns
 
 ---
 
@@ -91,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Ultra-lightweight 2-class architecture: `ClientFactory` and `DiscogsApiClient`
-- Magic method API calls: `$client->artistGet(['id' => '108713'])`
+- Magic method API calls: `$client->artistGet(['id' => '5590213'])`
 - Complete API coverage: 60 endpoints across all Discogs areas
 - Multiple authentication methods: OAuth, Personal Token, or anonymous
 - Modern PHP 8.1–8.5 support with strict typing

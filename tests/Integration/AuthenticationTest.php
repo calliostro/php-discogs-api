@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs\Tests\Integration;
 
-use Calliostro\Discogs\ClientFactory;
+use Calliostro\Discogs\DiscogsClientFactory;
 use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -16,15 +16,6 @@ use GuzzleHttp\Psr7\Response;
  */
 final class AuthenticationTest extends IntegrationTestCase
 {
-    /**
-     * @param array<string, mixed> $data
-     * @throws Exception If test setup or execution fails
-     */
-    private function jsonEncode(array $data): string
-    {
-        return json_encode($data) ?: '{}';
-    }
-
     public function testPersonalAccessTokenSendsCorrectHeaders(): void
     {
         // Mock response from Discogs API
@@ -42,7 +33,7 @@ final class AuthenticationTest extends IntegrationTestCase
         $container = [];
 
         // Pass handler in options, not as GuzzleClient
-        $client = ClientFactory::createWithPersonalAccessToken(
+        $client = DiscogsClientFactory::createWithPersonalAccessToken(
             'test-personal-token',
             ['handler' => $handlerStack]
         );
@@ -51,24 +42,28 @@ final class AuthenticationTest extends IntegrationTestCase
         $handlerStack->push(Middleware::history($container));
 
         // Make a request that requires authentication
-        $result = $client->search(['q' => 'Taylor Swift', 'type' => 'artist']);
+        $result = $client->search('Taylor Swift', 'artist');
 
-        // Verify the request was made with correct headers
         $this->assertCount(1, $container);
-
         $request = $container[0]['request'];
         $this->assertTrue($request->hasHeader('Authorization'));
 
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringContainsString('Discogs', $authHeader);
-        $this->assertStringContainsString('token=test-personal-token', $authHeader);
-        // Personal Access Token should NOT include a consumer key / secret
-        $this->assertStringNotContainsString('key=', $authHeader);
-        $this->assertStringNotContainsString('secret=', $authHeader);
+        $this->assertValidPersonalTokenHeader($authHeader);
+        $this->assertStringContainsString('test-personal-token', $authHeader);
 
         // Verify the response was properly decoded
         $this->assertIsArray($result);
         $this->assertArrayHasKey('results', $result);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws Exception If test setup or execution fails
+     */
+    private function jsonEncode(array $data): string
+    {
+        return json_encode($data) ?: '{}';
     }
 
     public function testOAuthSendsCorrectHeaders(): void
@@ -88,7 +83,7 @@ final class AuthenticationTest extends IntegrationTestCase
         $container = [];
 
         // Pass handler in options, not as GuzzleClient
-        $client = ClientFactory::createWithOAuth(
+        $client = DiscogsClientFactory::createWithOAuth(
             'test-consumer-key',
             'test-consumer-secret',
             'test-access-token',
@@ -102,14 +97,12 @@ final class AuthenticationTest extends IntegrationTestCase
         // Make a request that requires OAuth
         $result = $client->getIdentity();
 
-        // Verify the request was made with correct headers
         $this->assertCount(1, $container);
-
         $request = $container[0]['request'];
         $this->assertTrue($request->hasHeader('Authorization'));
 
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringContainsString('OAuth', $authHeader);
+        $this->assertValidOAuthHeader($authHeader);
         $this->assertStringContainsString('oauth_consumer_key="test-consumer-key"', $authHeader);
         $this->assertStringContainsString('oauth_token="test-access-token"', $authHeader);
         $this->assertStringContainsString('oauth_signature_method="PLAINTEXT"', $authHeader);
@@ -137,7 +130,7 @@ final class AuthenticationTest extends IntegrationTestCase
         $container = [];
 
         // Pass handler in options
-        $client = ClientFactory::createWithPersonalAccessToken(
+        $client = DiscogsClientFactory::createWithPersonalAccessToken(
             'personal-token',
             ['handler' => $handlerStack]
         );
@@ -145,13 +138,13 @@ final class AuthenticationTest extends IntegrationTestCase
         // Add history tracking AFTER auth middleware was added
         $handlerStack->push(Middleware::history($container));
 
-        $result = $client->listCollectionFolders(['username' => 'testuser']);
+        $result = $client->listCollectionFolders('testuser');
 
-        // Verify authentication header
         $this->assertCount(1, $container);
         $request = $container[0]['request'];
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringContainsString('Discogs token=personal-token', $authHeader);
+        $this->assertValidPersonalTokenHeader($authHeader);
+        $this->assertStringContainsString('personal-token', $authHeader);
 
         // Verify response
         $this->assertArrayHasKey('folders', $result);
@@ -172,7 +165,7 @@ final class AuthenticationTest extends IntegrationTestCase
         $container = [];
 
         // Pass handler in options
-        $client = ClientFactory::createWithOAuth(
+        $client = DiscogsClientFactory::createWithOAuth(
             'consumer-key',
             'consumer-secret',
             'access-token',
@@ -183,13 +176,12 @@ final class AuthenticationTest extends IntegrationTestCase
         // Add history tracking AFTER auth middleware was added
         $handlerStack->push(Middleware::history($container));
 
-        $result = $client->getMarketplaceOrders(['status' => 'All']);
+        $result = $client->getMarketplaceOrders('All');
 
-        // Verify OAuth header
         $this->assertCount(1, $container);
         $request = $container[0]['request'];
         $authHeader = $request->getHeaderLine('Authorization');
-        $this->assertStringContainsString('OAuth', $authHeader);
+        $this->assertValidOAuthHeader($authHeader);
         $this->assertStringContainsString('oauth_token="access-token"', $authHeader);
 
         // Verify response
@@ -212,17 +204,15 @@ final class AuthenticationTest extends IntegrationTestCase
         $container = [];
         $handlerStack->push(Middleware::history($container));
 
-        $client = ClientFactory::create(['handler' => $handlerStack]);
+        $client = DiscogsClientFactory::create(['handler' => $handlerStack]);
 
-        $result = $client->getArtist(['id' => '139250']);
+        $result = $client->getArtist('139250');
 
-        // Verify no authentication header is sent
         $this->assertCount(1, $container);
         $request = $container[0]['request'];
         $this->assertFalse($request->hasHeader('Authorization'));
 
-        // Verify response
-        $this->assertArrayHasKey('name', $result);
+        $this->assertValidArtistResponse($result);
         $this->assertEquals('The Weeknd', $result['name']);
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Calliostro\Discogs\Tests\Integration;
 
-use Calliostro\Discogs\ClientFactory;
-use Calliostro\Discogs\DiscogsApiClient;
+use Calliostro\Discogs\DiscogsClient;
+use Calliostro\Discogs\DiscogsClientFactory;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -18,11 +18,41 @@ use RuntimeException;
 /**
  * Integration tests for the complete client workflow
  *
- * @covers \Calliostro\Discogs\ClientFactory
- * @covers \Calliostro\Discogs\DiscogsApiClient
+ * @covers \Calliostro\Discogs\DiscogsClientFactory
+ * @covers \Calliostro\Discogs\DiscogsClient
  */
 final class ClientWorkflowTest extends IntegrationTestCase
 {
+    /**
+     * @throws Exception If test setup or execution fails
+     */
+    public function testCompleteWorkflowWithFactoryAndApiCalls(): void
+    {
+        $mockHandler = new MockHandler([
+            new Response(200, [], $this->jsonEncode(['id' => '4470662', 'name' => 'Billie Eilish'])),
+            new Response(200, [], $this->jsonEncode(['results' => [['title' => 'Happier Than Ever']]])),
+            new Response(200, [], $this->jsonEncode(['id' => '12677', 'name' => 'Interscope Records'])),
+        ]);
+
+        $handlerStack = HandlerStack::create($mockHandler);
+        $guzzleClient = new Client(['handler' => $handlerStack]);
+
+
+        $client = new DiscogsClient($guzzleClient);
+
+        $artist = $client->getArtist('4470662');
+        $this->assertValidArtistResponse($artist);
+        $this->assertEquals('Billie Eilish', $artist['name']);
+
+        $search = $client->search('Billie Eilish', 'artist');
+        $this->assertValidSearchResponse($search);
+
+        $label = $client->getLabel('12677');
+        $this->assertIsArray($label);
+        $this->assertArrayHasKey('name', $label);
+        $this->assertEquals('Interscope Records', $label['name']);
+    }
+
     /**
      * Helper method to safely encode JSON for Response body
      *
@@ -37,43 +67,12 @@ final class ClientWorkflowTest extends IntegrationTestCase
     /**
      * @throws Exception If test setup or execution fails
      */
-    public function testCompleteWorkflowWithFactoryAndApiCalls(): void
-    {
-        // Create a mock handler with multiple responses
-        $mockHandler = new MockHandler([
-            new Response(200, [], $this->jsonEncode(['id' => '108713', 'name' => 'Aphex Twin'])),
-            new Response(200, [], $this->jsonEncode(['results' => [['title' => 'Selected Ambient Works']]])),
-            new Response(200, [], $this->jsonEncode(['id' => '1', 'name' => 'Warp Records'])),
-        ]);
-
-        $handlerStack = HandlerStack::create($mockHandler);
-        $guzzleClient = new Client(['handler' => $handlerStack]);
-
-        // Create a client using factory with a custom Guzzle client
-        $client = new DiscogsApiClient($guzzleClient);
-
-        // Test multiple API calls
-        $artist = $client->getArtist(['id' => '108713']);
-        $this->assertEquals('Aphex Twin', $artist['name']);
-
-        $search = $client->search(['q' => 'Aphex Twin', 'type' => 'artist']);
-        $this->assertArrayHasKey('results', $search);
-
-        $label = $client->getLabel(['id' => '1']);
-        $this->assertEquals('Warp Records', $label['name']);
-    }
-
-    /**
-     * @throws Exception If test setup or execution fails
-     */
     public function testFactoryCreatesWorkingClients(): void
     {
-        // Test regular factory method
-        $client1 = ClientFactory::create();
+        $client1 = DiscogsClientFactory::create();
         /** @noinspection PhpConditionAlreadyCheckedInspection */
-        $this->assertInstanceOf(DiscogsApiClient::class, $client1);
+        $this->assertInstanceOf(DiscogsClient::class, $client1);
 
-        // Verify the client has the expected configuration
         $reflection = new ReflectionClass($client1);
         $configProperty = $reflection->getProperty('config');
         /** @noinspection PhpExpressionResultUnusedInspection */
@@ -82,12 +81,11 @@ final class ClientWorkflowTest extends IntegrationTestCase
         $this->assertIsArray($config);
         $this->assertArrayHasKey('operations', $config);
 
-        // Test OAuth factory method
-        $client2 = ClientFactory::createWithOAuth('consumer_key', 'consumer_secret', 'token', 'token_secret');
-        /** @noinspection PhpConditionAlreadyCheckedInspection */
-        $this->assertInstanceOf(DiscogsApiClient::class, $client2);
 
-        // Verify OAuth client also has proper configuration
+        $client2 = DiscogsClientFactory::createWithOAuth('consumer_key', 'consumer_secret', 'token', 'token_secret');
+        /** @noinspection PhpConditionAlreadyCheckedInspection */
+        $this->assertInstanceOf(DiscogsClient::class, $client2);
+
         $reflection2 = new ReflectionClass($client2);
         $configProperty2 = $reflection2->getProperty('config');
         /** @noinspection PhpExpressionResultUnusedInspection */
@@ -96,7 +94,7 @@ final class ClientWorkflowTest extends IntegrationTestCase
         $this->assertIsArray($config2);
         $this->assertArrayHasKey('operations', $config2);
 
-        // Verify they're different instances (factory creates new instances)
+
         $this->assertNotSame($client1, $client2);
     }
 
@@ -105,10 +103,9 @@ final class ClientWorkflowTest extends IntegrationTestCase
      */
     public function testServiceConfigurationIsLoaded(): void
     {
-        $client = ClientFactory::create();
+        $client = DiscogsClientFactory::create();
 
-        // This will fail if service.php is not properly loaded.
-        // We use reflection to check the config was loaded
+
         $reflection = new ReflectionClass($client);
         $configProperty = $reflection->getProperty('config');
         /** @noinspection PhpExpressionResultUnusedInspection */
@@ -117,7 +114,7 @@ final class ClientWorkflowTest extends IntegrationTestCase
 
         $this->assertIsArray($config);
         $this->assertArrayHasKey('operations', $config);
-        $this->assertArrayHasKey('getArtist', $config['operations']); // v4.0 uses camelCase
+        $this->assertArrayHasKey('getArtist', $config['operations']);
         $this->assertArrayHasKey('search', $config['operations']);
     }
 
@@ -126,12 +123,10 @@ final class ClientWorkflowTest extends IntegrationTestCase
      */
     public function testMethodNameToOperationConversion(): void
     {
-        // Create a client with a mock that we'll never use
-        // We just want to test the method name conversion
         $mockHandler = new MockHandler();
         $handlerStack = HandlerStack::create($mockHandler);
         $guzzleClient = new Client(['handler' => $handlerStack]);
-        $client = new DiscogsApiClient($guzzleClient);
+        $client = new DiscogsClient($guzzleClient);
 
         // Use reflection to test the private method
         $reflection = new ReflectionClass($client);
@@ -139,7 +134,7 @@ final class ClientWorkflowTest extends IntegrationTestCase
         /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
-        // Test v4.0 conversions - no conversion, direct mapping
+
         $this->assertEquals('artistGet', $method->invokeArgs($client, ['artistGet']));
         $this->assertEquals('artistReleases', $method->invokeArgs($client, ['artistReleases']));
         $this->assertEquals('collectionFolders', $method->invokeArgs($client, ['collectionFolders']));
@@ -152,11 +147,10 @@ final class ClientWorkflowTest extends IntegrationTestCase
      */
     public function testUriBuilding(): void
     {
-        // Create a client to test URI building
         $mockHandler = new MockHandler();
         $handlerStack = HandlerStack::create($mockHandler);
         $guzzleClient = new Client(['handler' => $handlerStack]);
-        $client = new DiscogsApiClient($guzzleClient);
+        $client = new DiscogsClient($guzzleClient);
 
         // Use reflection to test the private method
         $reflection = new ReflectionClass($client);
@@ -164,14 +158,17 @@ final class ClientWorkflowTest extends IntegrationTestCase
         /** @noinspection PhpExpressionResultUnusedInspection */
         $method->setAccessible(true);
 
-        // Test URI building with parameters
-        $uri = $method->invokeArgs($client, ['artists/{id}', ['id' => '108713']]);
-        $this->assertEquals('artists/108713', $uri);
 
-        $uri = $method->invokeArgs($client, ['users/{username}/collection/folders/{folder_id}/releases', [
-            'username' => 'testuser',
-            'folder_id' => '0',
-        ]]);
+        $uri = $method->invokeArgs($client, ['artists/{id}', ['id' => '4470662']]);
+        $this->assertEquals('artists/4470662', $uri);
+
+        $uri = $method->invokeArgs($client, [
+            'users/{username}/collection/folders/{folder_id}/releases',
+            [
+                'username' => 'testuser',
+                'folder_id' => '0',
+            ]
+        ]);
         $this->assertEquals('users/testuser/collection/folders/0/releases', $uri);
     }
 
@@ -180,7 +177,6 @@ final class ClientWorkflowTest extends IntegrationTestCase
      */
     public function testErrorHandlingInCompleteWorkflow(): void
     {
-        // Create mock handler with error response
         $mockHandler = new MockHandler([
             new Response(404, [], $this->jsonEncode([
                 'error' => 404,
@@ -190,11 +186,11 @@ final class ClientWorkflowTest extends IntegrationTestCase
 
         $handlerStack = HandlerStack::create($mockHandler);
         $guzzleClient = new Client(['handler' => $handlerStack]);
-        $client = new DiscogsApiClient($guzzleClient);
+        $client = new DiscogsClient($guzzleClient);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Artist not found');
 
-        $client->getArtist(['id' => '999999']);
+        $client->getArtist('999999');
     }
 }

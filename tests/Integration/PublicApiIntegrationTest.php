@@ -2,58 +2,32 @@
 
 namespace Calliostro\Discogs\Tests\Integration;
 
-use Calliostro\Discogs\ClientFactory;
+use Calliostro\Discogs\DiscogsClientFactory;
 use Exception;
 
 /**
- * Integration Tests for Public API Endpoints
- *
- * These tests run against the real Discogs API using public endpoints
- * that don't require authentication. They validate:
- *
- * 1. API endpoint availability
- * 2. Response format consistency
- * 3. Known API changes/deprecations
- *
- * Safe for CI/CD - no credentials required!
+ * Integration tests for public API endpoints that don't require authentication
  */
 final class PublicApiIntegrationTest extends IntegrationTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp(); // Includes rate-limiting delay
-        $this->client = ClientFactory::create();
-    }
-
     /**
-     * Test getReleaseStats() - API format changed over time
-     *
-     * Historical note: This endpoint originally returned num_have/num_want statistics
-     * but was simplified around 2024/2025 to only return offensive content flags.
-     * The community stats are now available in the main release endpoint.
+     * Test getReleaseStats() - validates current API format
      */
     public function testGetReleaseStats(): void
     {
-        $stats = $this->client->getReleaseStats(['id' => '249504']);
+        $stats = $this->client->getReleaseStats('19929817');
 
         $this->assertIsArray($stats);
 
-        // Current format (as of 2025): Only offensive flag
         if (array_key_exists('is_offensive', $stats)) {
             $this->assertIsBool($stats['is_offensive']);
-
-            // If we only get is_offensive, make sure old keys aren't there
             if (count($stats) === 1) {
                 $this->assertArrayNotHasKey('num_have', $stats);
                 $this->assertArrayNotHasKey('num_want', $stats);
-                $this->assertArrayNotHasKey('in_collection', $stats);
-                $this->assertArrayNotHasKey('in_wantlist', $stats);
             }
         }
 
-        // Legacy format (pre-2025): Should contain statistics
         if (array_key_exists('num_have', $stats) || array_key_exists('num_want', $stats)) {
-            // If Discogs brings back the old format, these should be integers
             if (isset($stats['num_have'])) {
                 $this->assertIsInt($stats['num_have']);
                 $this->assertGreaterThanOrEqual(0, $stats['num_have']);
@@ -64,16 +38,13 @@ final class PublicApiIntegrationTest extends IntegrationTestCase
             }
         }
 
-        // At minimum, we should get some response
         $this->assertNotEmpty($stats);
     }
 
-    /**
-     * Test that collection stats are still available in the full release endpoint
-     */
+
     public function testCollectionStatsInReleaseEndpoint(): void
     {
-        $release = $this->client->getRelease(['id' => '249504']);
+        $release = $this->client->getRelease(19929817);
 
         $this->assertIsArray($release);
         $this->assertArrayHasKey('community', $release);
@@ -86,30 +57,23 @@ final class PublicApiIntegrationTest extends IntegrationTestCase
         $this->assertGreaterThan(0, $release['community']['want']);
     }
 
-    /**
-     * Test basic database methods that should always work
-     */
     public function testBasicDatabaseMethods(): void
     {
-        // Test artist
-        $artist = $this->client->getArtist(['id' => '139250']);
-        $this->assertIsArray($artist);
-        $this->assertArrayHasKey('name', $artist);
+        $artist = $this->client->getArtist(5590213);
+        $this->assertValidArtistResponse($artist);
 
-        // Test release
-        $release = $this->client->getRelease(['id' => '249504']);
-        $this->assertIsArray($release);
-        $this->assertArrayHasKey('title', $release);
+        $release = $this->client->getRelease(19929817);
+        $this->assertValidReleaseResponse($release);
 
-        // Test master
-        $master = $this->client->getMaster(['id' => '18512']);
+        $master = $this->client->getMaster(1524311);
         $this->assertIsArray($master);
         $this->assertArrayHasKey('title', $master);
+        $this->assertIsString($master['title']);
 
-        // Test label
-        $label = $this->client->getLabel(['id' => '1']);
+        $label = $this->client->getLabel(2311);
         $this->assertIsArray($label);
         $this->assertArrayHasKey('name', $label);
+        $this->assertIsString($label['name']);
     }
 
     /**
@@ -117,29 +81,25 @@ final class PublicApiIntegrationTest extends IntegrationTestCase
      */
     public function testCommunityReleaseRating(): void
     {
-        $rating = $this->client->getCommunityReleaseRating(['release_id' => '249504']);
+        $rating = $this->client->getCommunityReleaseRating('19929817');
 
         $this->assertIsArray($rating);
         $this->assertArrayHasKey('rating', $rating);
         $this->assertArrayHasKey('release_id', $rating);
-        $this->assertEquals(249504, $rating['release_id']);
+        $this->assertEquals(19929817, $rating['release_id']);
 
         $this->assertIsArray($rating['rating']);
         $this->assertArrayHasKey('average', $rating['rating']);
         $this->assertArrayHasKey('count', $rating['rating']);
     }
 
-    /**
-     * Test pagination works correctly
-     */
     public function testPaginationOnListEndpoints(): void
     {
-        // Test artist releases with pagination
-        $releases = $this->client->listArtistReleases(['id' => '139250', 'per_page' => 2, 'page' => 1]);
+        $releases = $this->client->listArtistReleases('5590213', null, null, 2, 1);
 
         $this->assertIsArray($releases);
         $this->assertArrayHasKey('releases', $releases);
-        $this->assertArrayHasKey('pagination', $releases);
+        $this->assertValidPaginationResponse($releases);
 
         $this->assertCount(2, $releases['releases']);
         $this->assertEquals(1, $releases['pagination']['page']);
@@ -152,14 +112,11 @@ final class PublicApiIntegrationTest extends IntegrationTestCase
     public function testApiChangesCompatibility(): void
     {
         // getReleaseStats changed format - verify our code handles it
-        $stats = $this->client->getReleaseStats(['id' => '249504']);
+        $stats = $this->client->getReleaseStats('19929817');
         $this->assertEquals(['is_offensive' => false], $stats);
 
-        // Verify the old data is still available in the release endpoint
-        $release = $this->client->getRelease(['id' => '249504']);
+        $release = $this->client->getRelease(19929817);
         $this->assertArrayHasKey('community', $release);
-
-        // This is where the "stats" data actually lives now
         $this->assertIsInt($release['community']['have']);
         $this->assertIsInt($release['community']['want']);
     }
@@ -173,6 +130,12 @@ final class PublicApiIntegrationTest extends IntegrationTestCase
         $this->expectExceptionMessageMatches('/not found|does not exist/i');
 
         // This should throw an exception for non-existent artist
-        $this->client->getArtist(['id' => '999999999']);
+        $this->client->getArtist(999999999);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp(); // Includes rate-limiting delay
+        $this->client = DiscogsClientFactory::create();
     }
 }
