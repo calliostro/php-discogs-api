@@ -161,31 +161,12 @@ Get credentials at [Discogs Developer Settings](https://www.discogs.com/settings
 
 ### Quick Reference
 
-| Level | Method                            | Credentials Needed | Access                                  |
-|-------|-----------------------------------|--------------------|-----------------------------------------|
-| 1️⃣   | `create()`                        | None               | Public data (artists, releases, labels) |
-| 2️⃣   | `createWithConsumerCredentials()` | App key + secret   | + Database search                       |
-| 3️⃣   | `createWithPersonalAccessToken()` | + Personal token   | + Your collections/wantlist             |
-| 4️⃣   | `createWithOAuth()`               | + OAuth tokens     | + Act for other users                   |
-
-### Implementation
-
-```php
-// Level 1: Public data only
-$discogs = DiscogsClientFactory::create();
-
-// Level 2: Search enabled
-$discogs = DiscogsClientFactory::createWithConsumerCredentials('key', 'secret');
-$results = $discogs->search('Taylor Swift');
-
-// Level 3: Your account access (most common)
-$discogs = DiscogsClientFactory::createWithPersonalAccessToken('token');
-$folders = $discogs->listCollectionFolders('you');
-$wantlist = $discogs->getUserWantlist('you');
-
-// Level 4: Multi-user apps
-$discogs = DiscogsClientFactory::createWithOAuth('key', 'secret', 'oauth_token', 'oauth_secret');
-```
+| What you want to do     | Method                            | What you need    |
+|-------------------------|-----------------------------------|------------------|
+| Get artist/release info | `create()`                        | Nothing          |
+| Search the database     | `createWithConsumerCredentials()` | Register app     |
+| Access your collection  | `createWithPersonalAccessToken()` | Personal token   |
+| Multi-user app          | `createWithOAuth()`               | Full OAuth setup |
 
 ### Complete OAuth Flow Example
 

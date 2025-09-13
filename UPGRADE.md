@@ -36,7 +36,7 @@ $search = $discogs->search('Billie Eilish', 'artist');
 - **Developer Experience**: ~750 lines of focused code with comprehensive type safety
 - **Type Safety**: Automatic parameter validation and conversion
 
-## 📋 Migration Steps
+## � Migration Steps
 
 ### Step 1: Update Dependencies
 
@@ -89,7 +89,7 @@ Parameters follow the order defined in the [service configuration](resources/ser
 
 **💡 Tip**: Use `null` for optional parameters you want to skip.
 
-## �📋 Migration Examples
+## � Migration Examples
 
 ### Database Methods
 
