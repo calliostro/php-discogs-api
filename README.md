@@ -63,7 +63,7 @@ $discogs = DiscogsClientFactory::createWithPersonalAccessToken('token');
 $collection = $discogs->listCollectionFolders('your-username');
 $wantlist = $discogs->getUserWantlist('your-username');
 
-// Add to collection with named parameters
+// Add to the collection with named parameters
 $discogs->addToCollection(
     username: 'your-username',
     folderId: 1,
@@ -107,46 +107,37 @@ $identity = $discogs->getIdentity();
 - **php** ^8.1
 - **guzzlehttp/guzzle** ^6.5 || ^7.0
 
-## ⚙️ Advanced Configuration
+## ⚙️ Configuration
 
-### Option 1: Simple Configuration (Recommended)
+### Configuration
 
-For basic customizations like timeout or User-Agent, use the DiscogsClientFactory:
+**Simple (works out of the box):**
 
 ```php
 use Calliostro\Discogs\DiscogsClientFactory;
+
+$discogs = DiscogsClientFactory::create();
+```
+
+**Advanced (middleware, custom options, etc.):**
+
+```php
+use Calliostro\Discogs\DiscogsClientFactory;
+use GuzzleHttp\{HandlerStack, Middleware};
+
+$handler = HandlerStack::create();
+$handler->push(Middleware::retry(
+    fn ($retries, $request, $response) => $retries < 3 && $response?->getStatusCode() === 429,
+    fn ($retries) => 1000 * 2 ** ($retries + 1) // Rate limit handling
+));
 
 $discogs = DiscogsClientFactory::create([
     'timeout' => 30,
+    'handler' => $handler,
     'headers' => [
         'User-Agent' => 'MyApp/1.0 (+https://myapp.com)',
     ]
 ]);
-```
-
-### Option 2: Advanced Guzzle Configuration
-
-For advanced HTTP client features (middleware, interceptors, etc.), create your own Guzzle client:
-
-```php
-use GuzzleHttp\Client;
-use Calliostro\Discogs\DiscogsClient;
-use Calliostro\Discogs\DiscogsClientFactory;
-
-$httpClient = new Client([
-    'base_uri' => 'https://api.discogs.com/',
-    'timeout' => 30,
-    'connect_timeout' => 10,
-    'headers' => [
-        'User-Agent' => 'MyApp/1.0 (+https://myapp.com)',
-    ]
-]);
-
-// Direct usage
-$discogs = new DiscogsClient($httpClient);
-
-// Or via DiscogsClientFactory
-$discogs = DiscogsClientFactory::create($httpClient);
 ```
 
 > 💡 **Note:** By default, the client uses `DiscogsClient/4.0.0 +https://github.com/calliostro/php-discogs-api` as User-Agent. You can override this by setting custom headers as shown above.
@@ -242,25 +233,6 @@ $discogs = DiscogsClientFactory::createWithOAuth($consumerKey, $consumerSecret, 
 $identity = $discogs->getIdentity();
 echo "Hello " . $identity['username'];
 ```
-
-## 🛡️ Rate Limiting (Optional)
-
-Quick demo for handling Discogs rate limits (60/min authenticated, 25/min unauthenticated) with Guzzle middleware:
-
-```php
-use GuzzleHttp\{HandlerStack, Middleware};
-use Calliostro\Discogs\DiscogsClientFactory;
-
-$handler = HandlerStack::create();
-$handler->push(Middleware::retry(
-    fn ($retries, $request, $response) => $retries < 3 && $response?->getStatusCode() === 429,
-    fn ($retries) => 1000 * 2 ** ($retries + 1) // 2s, 4s, 8s delays
-), 'rate_limit');
-
-$discogs = DiscogsClientFactory::create(['handler' => $handler]);
-```
-
-> 💡 **Note:** For long-running batches, consider optimized solutions with retry backoff caps to prevent exponentially increasing delays.
 
 ## 🧪 Testing
 
