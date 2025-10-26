@@ -78,11 +78,8 @@ jobs:
           composer config minimum-stability ${{ matrix.stability }}
           composer config prefer-stable true
 
-      - name: Remove composer.lock
-        run: rm -f composer.lock
-
       - name: Install dependencies
-        run: composer update --prefer-dist --no-interaction --no-progress
+        run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict

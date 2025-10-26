@@ -9,9 +9,6 @@ use GuzzleHttp\Exception\ClientException;
 
 /**
  * Integration tests that require authentication credentials
- *
- * @group integration
- * @group authenticated
  */
 final class AuthenticatedIntegrationTest extends IntegrationTestCase
 {

@@ -44,8 +44,8 @@ Integration tests are **separated from the CI pipeline** to prevent:
 
 ### Test Strategy
 
-- **Unit Tests (101)**: Fast, reliable, no external dependencies → **CI default**
-- **Integration Tests (31)**: Real API calls, rate-limited → **Manual execution**  
+- **Unit Tests**: Fast, reliable, no external dependencies → **CI default**
+- **Integration Tests**: Real API calls, rate-limited → **Manual execution**
 - **Total Coverage**: 100% lines, methods, and classes covered
 
 ### GitHub Secrets Required

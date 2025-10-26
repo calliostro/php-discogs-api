@@ -12,11 +12,10 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\Attributes\CoversClass;
 use RuntimeException;
 
-/**
- * @covers \Calliostro\Discogs\OAuthHelper
- */
+#[CoversClass(OAuthHelper::class)]
 final class OAuthHelperTest extends UnitTestCase
 {
     public function testGetAuthorizationUrl(): void

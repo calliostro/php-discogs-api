@@ -16,6 +16,7 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -23,9 +24,7 @@ use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
 
-/**
- * @covers \Calliostro\Discogs\DiscogsClient
- */
+#[CoversClass(DiscogsClient::class)]
 final class DiscogsClientTest extends UnitTestCase
 {
     private DiscogsClient $client;

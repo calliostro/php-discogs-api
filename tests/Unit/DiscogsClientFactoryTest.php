@@ -13,11 +13,11 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 
-/**
- * @covers \Calliostro\Discogs\DiscogsClientFactory
- * @uses   \Calliostro\Discogs\DiscogsClient
- */
+#[CoversClass(DiscogsClientFactory::class)]
+#[UsesClass(DiscogsClient::class)]
 final class DiscogsClientFactoryTest extends UnitTestCase
 {
     /**

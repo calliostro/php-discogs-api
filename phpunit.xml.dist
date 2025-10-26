@@ -29,5 +29,12 @@
   <php>
     <ini name="error_reporting" value="E_ALL"/>
     <ini name="memory_limit" value="-1"/>
+    <!-- Discogs API credentials for integration tests -->
+    <!-- Set these environment variables before running integration tests -->
+    <env name="DISCOGS_CONSUMER_KEY" value=""/>
+    <env name="DISCOGS_CONSUMER_SECRET" value=""/>
+    <env name="DISCOGS_PERSONAL_ACCESS_TOKEN" value=""/>
+    <env name="DISCOGS_OAUTH_TOKEN" value=""/>
+    <env name="DISCOGS_OAUTH_TOKEN_SECRET" value=""/>
   </php>
 </phpunit>

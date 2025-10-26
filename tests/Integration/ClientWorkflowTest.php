@@ -11,16 +11,16 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\Attributes\CoversClass;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
 
 /**
  * Integration tests for the complete client workflow
- *
- * @covers \Calliostro\Discogs\DiscogsClientFactory
- * @covers \Calliostro\Discogs\DiscogsClient
  */
+#[CoversClass(DiscogsClientFactory::class)]
+#[CoversClass(DiscogsClient::class)]
 final class ClientWorkflowTest extends IntegrationTestCase
 {
     /**
