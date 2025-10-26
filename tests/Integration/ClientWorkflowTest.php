@@ -19,10 +19,7 @@ use RuntimeException;
 /**
  * Integration tests for the complete client workflow
  */
-#[
-    CoversClass(DiscogsClientFactory::class),
-    CoversClass(DiscogsClient::class)
-]
+#[CoversClass(DiscogsClient::class)]
 final class ClientWorkflowTest extends IntegrationTestCase
 {
     /**
