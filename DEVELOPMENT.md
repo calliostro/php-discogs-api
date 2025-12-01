@@ -89,14 +89,11 @@ export DISCOGS_CONSUMER_KEY="your-consumer-key"
 export DISCOGS_CONSUMER_SECRET="your-consumer-secret" 
 export DISCOGS_PERSONAL_ACCESS_TOKEN="your-personal-access-token"
 
-# Run public tests only
-vendor/bin/phpunit tests/Integration/PublicApiIntegrationTest.php
+# Run integration tests (public tests run without credentials, auth tests skip if no credentials)
+composer test-integration
 
-# Run authentication tests (requires env vars)
-vendor/bin/phpunit tests/Integration/AuthenticationLevelsTest.php
-
-# Run all integration tests
-vendor/bin/phpunit tests/Integration/ --testdox
+# Run all tests (unit + integration) with detailed output
+composer test-all -- --testdox
 ```
 
 ### Safety Notes

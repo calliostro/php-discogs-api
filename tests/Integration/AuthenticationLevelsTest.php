@@ -20,9 +20,9 @@ final class AuthenticationLevelsTest extends IntegrationTestCase
     {
         $discogs = DiscogsClientFactory::create();
 
-        $artist = $discogs->getArtist('1');
+        $artist = $discogs->getArtist('5590213');
         $this->assertValidArtistResponse($artist);
-        $this->assertEquals('The Persuader', $artist['name']);
+        $this->assertEquals('Billie Eilish', $artist['name']);
     }
 
     public function testLevel2ConsumerCredentials(): void
