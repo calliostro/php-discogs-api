@@ -31,11 +31,8 @@ jobs:
             allowed-to-fail: false
           - php: '8.4'
             allowed-to-fail: false
-
-          # Future-ready: PHP 8.5 (alpha/dev) - when available
           - php: '8.5'
-            stability: 'dev'
-            allowed-to-fail: true
+            allowed-to-fail: false
 
           # Development stability tests
           - php: '8.4'
