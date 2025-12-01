@@ -104,7 +104,7 @@ jobs:
           if [ -n "$DISCOGS_CONSUMER_KEY" ] && [ -n "$DISCOGS_CONSUMER_SECRET" ] && [ -n "$DISCOGS_PERSONAL_ACCESS_TOKEN" ]; then
             vendor/bin/phpunit tests/Integration/AuthenticationLevelsTest.php --testdox
           else
-            echo "⚠️  Skipping authenticated integration tests - secrets not available"
+            echo "Skipping authenticated integration tests - secrets not available"
           fi
 
   code-quality:

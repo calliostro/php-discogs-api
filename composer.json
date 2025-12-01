@@ -59,7 +59,6 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit --testsuite=\"Unit Tests\"",
-        "test-unit": "vendor/bin/phpunit --testsuite=\"Unit Tests\"",
         "test-integration": "vendor/bin/phpunit --testsuite=\"Integration Tests\"",
         "test-all": "vendor/bin/phpunit --testsuite=\"All Tests\"",
         "test-coverage": "vendor/bin/phpunit --testsuite=\"Unit Tests\" --coverage-html coverage --coverage-clover coverage.xml",
