@@ -55,7 +55,7 @@ $results = $discogs->search('Billie Eilish', 'artist');
 $releases = $discogs->listArtistReleases(4470662, 'year', 'desc', 50);
 
 // Named parameters (PHP 8.0+, recommended for clarity)
-$results = $discogs->search(query: 'Taylor Swift', type: 'release');
+$results = $discogs->search(q: 'Taylor Swift', type: 'release');
 $releases = $discogs->listArtistReleases(
     artistId: 4470662,
     sort: 'year', 
