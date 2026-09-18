@@ -103,6 +103,22 @@ abstract class IntegrationTestCase extends TestCase
     }
 
     /**
+     * Helper to safely extract recorded request from Guzzle history container
+     *
+     * @param array<mixed>|\ArrayAccess<int, mixed> $container
+     */
+    protected function getHistoryRequest(array|\ArrayAccess $container, int $index = 0): \Psr\Http\Message\RequestInterface
+    {
+        $this->assertArrayHasKey($index, $container);
+        $entry = $container[$index];
+        $this->assertIsArray($entry);
+        $this->assertArrayHasKey('request', $entry);
+        $this->assertInstanceOf(\Psr\Http\Message\RequestInterface::class, $entry['request']);
+
+        return $entry['request'];
+    }
+
+    /**
      * Override PHPUnit's runTest to add automatic retry on rate limiting
      * This uses reflection to access the private runTest method
      * @throws ReflectionException If reflection operations fail

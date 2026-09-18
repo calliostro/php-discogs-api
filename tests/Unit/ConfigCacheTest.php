@@ -56,9 +56,6 @@ final class ConfigCacheTest extends UnitTestCase
 
         $this->assertNotNull($constructor);
         $this->assertTrue($constructor->isPrivate());
-
-        // Ensure the constructor method is defined (even if empty)
-        $this->assertTrue(method_exists(ConfigCache::class, '__construct'));
     }
 
     public function testCannotInstantiateConfigCache(): void

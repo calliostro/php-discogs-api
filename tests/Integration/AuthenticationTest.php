@@ -44,8 +44,9 @@ final class AuthenticationTest extends IntegrationTestCase
         // Make a request that requires authentication
         $result = $client->search('Taylor Swift', 'artist');
 
+        $this->assertIsArray($container);
         $this->assertCount(1, $container);
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertTrue($request->hasHeader('Authorization'));
 
         $authHeader = $request->getHeaderLine('Authorization');
@@ -53,13 +54,11 @@ final class AuthenticationTest extends IntegrationTestCase
         $this->assertStringContainsString('test-personal-token', $authHeader);
 
         // Verify the response was properly decoded
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('results', $result);
     }
 
     /**
      * @param array<string, mixed> $data
-     * @throws Exception If test setup or execution fails
      */
     private function jsonEncode(array $data): string
     {
@@ -97,8 +96,9 @@ final class AuthenticationTest extends IntegrationTestCase
         // Make a request that requires OAuth
         $result = $client->getIdentity();
 
+        $this->assertIsArray($container);
         $this->assertCount(1, $container);
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertTrue($request->hasHeader('Authorization'));
 
         $authHeader = $request->getHeaderLine('Authorization');
@@ -109,7 +109,6 @@ final class AuthenticationTest extends IntegrationTestCase
         $this->assertStringContainsString('oauth_signature="test-consumer-secret&test-token-secret"', $authHeader);
 
         // Verify the response was properly decoded
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('username', $result);
         $this->assertEquals('testuser', $result['username']);
     }
@@ -140,8 +139,9 @@ final class AuthenticationTest extends IntegrationTestCase
 
         $result = $client->listCollectionFolders('testuser');
 
+        $this->assertIsArray($container);
         $this->assertCount(1, $container);
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertValidPersonalTokenHeader($authHeader);
         $this->assertStringContainsString('personal-token', $authHeader);
@@ -178,8 +178,9 @@ final class AuthenticationTest extends IntegrationTestCase
 
         $result = $client->getMarketplaceOrders('All');
 
+        $this->assertIsArray($container);
         $this->assertCount(1, $container);
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertValidOAuthHeader($authHeader);
         $this->assertStringContainsString('oauth_token="access-token"', $authHeader);
@@ -208,8 +209,9 @@ final class AuthenticationTest extends IntegrationTestCase
 
         $result = $client->getArtist('139250');
 
+        $this->assertIsArray($container);
         $this->assertCount(1, $container);
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertFalse($request->hasHeader('Authorization'));
 
         $this->assertValidArtistResponse($result);

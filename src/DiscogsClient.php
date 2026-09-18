@@ -163,7 +163,9 @@ final class DiscogsClient
             return [];
         }
 
+        /** @var list<string> $parameterNames */
         $parameterNames = array_keys($this->config['operations'][$operationName]['parameters']);
+        /** @var array<string, mixed> $params */
         $params = [];
 
         // Check if we have named parameters (associative array with string keys)

@@ -56,7 +56,6 @@ final class ClientWorkflowTest extends IntegrationTestCase
      * Helper method to safely encode JSON for Response body
      *
      * @param array<string, mixed> $data
-     * @throws Exception If test setup or execution fails
      */
     private function jsonEncode(array $data): string
     {

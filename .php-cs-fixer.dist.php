@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__ . '/src')
     ->in(__DIR__ . '/tests')
-    ->exclude('vendor');
+    ->exclude('vendor')
+    ->exclude('coverage')
+    ->exclude('.phpunit.cache')
+    ->name('*.php');
 
 $config = new PhpCsFixer\Config();
 $config->setFinder($finder)
@@ -11,9 +16,7 @@ $config->setFinder($finder)
         '@PSR12' => true,
         '@PSR12:risky' => true,
     ])
-    ->setRiskyAllowed(true);
-
-// @phpstan-ignore-next-line Method exists but not detected by static analysis
-$config->setUnsupportedPhpVersionAllowed(true);
+    ->setRiskyAllowed(true)
+    ->setUnsupportedPhpVersionAllowed(true);
 
 return $config;

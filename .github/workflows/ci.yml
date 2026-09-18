@@ -16,7 +16,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -33,6 +33,8 @@ jobs:
             allowed-to-fail: false
           - php: '8.5'
             allowed-to-fail: false
+          - php: '8.6'
+            allowed-to-fail: true
 
           # Development stability tests
           - php: '8.4'
@@ -41,14 +43,42 @@ jobs:
           - php: '8.5'
             stability: 'dev'
             allowed-to-fail: true
+          - php: '8.6'
+            stability: 'dev'
+            allowed-to-fail: true
 
-    name: "PHP ${{ matrix.php }}${{ matrix.stability && format(' | {0}', matrix.stability) || '' }}"
+          # Guzzle 7.0 backwards compatibility tests
+          - php: '8.1'
+            guzzle: '7'
+            allowed-to-fail: false
+          - php: '8.4'
+            guzzle: '7'
+            allowed-to-fail: false
+          - php: '8.5'
+            guzzle: '7'
+            allowed-to-fail: false
+          - php: '8.6'
+            guzzle: '7'
+            allowed-to-fail: true
+
+          # Guzzle 8.0 compatibility tests
+          - php: '8.4'
+            guzzle: '8'
+            allowed-to-fail: false
+          - php: '8.5'
+            guzzle: '8'
+            allowed-to-fail: false
+          - php: '8.6'
+            guzzle: '8'
+            allowed-to-fail: true
+
+    name: "PHP ${{ matrix.php }}${{ matrix.guzzle && format(' | Guzzle {0}', matrix.guzzle) || '' }}${{ matrix.stability && format(' | {0}', matrix.stability) || '' }}"
 
     continue-on-error: ${{ matrix.allowed-to-fail }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -63,7 +93,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
@@ -76,7 +106,14 @@ jobs:
           composer config prefer-stable true
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+        run: |
+          if [ "${{ matrix.guzzle }}" = "7" ]; then
+            composer require "guzzlehttp/guzzle:^7.0" --with-all-dependencies --prefer-dist --no-interaction --no-progress
+          elif [ "${{ matrix.guzzle }}" = "8" ]; then
+            composer require "guzzlehttp/guzzle:^8.0" --with-all-dependencies --prefer-dist --no-interaction --no-progress
+          else
+            composer install --prefer-dist --no-interaction --no-progress
+          fi
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
@@ -101,12 +138,12 @@ jobs:
           composer test-integration -- --testdox
 
   code-quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Code Quality Checks
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -121,7 +158,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
@@ -134,12 +171,12 @@ jobs:
         run: composer validate --strict
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Code Coverage
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -154,7 +191,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
@@ -167,9 +204,10 @@ jobs:
         run: composer test-coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+
