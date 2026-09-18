@@ -154,8 +154,6 @@ final class ProductionRealisticTest extends UnitTestCase
         );
 
         $result = $this->client->getArtist(999999999999);
-
-        $this->assertIsArray($result);
         $this->assertEquals(999999999999, $result['id']);
     }
 
@@ -171,7 +169,6 @@ final class ProductionRealisticTest extends UnitTestCase
         // Test with problematic characters that might break URL encoding
         $result = $this->client->search('Post Malone: Hollywood\'s Bleeding [Deluxe]');
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('results', $result);
     }
 
@@ -211,7 +208,6 @@ final class ProductionRealisticTest extends UnitTestCase
 
         $result = $this->client->getArtist(1);
 
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('data', $result);
     }
 

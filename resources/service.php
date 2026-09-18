@@ -610,7 +610,7 @@ return [
             'base_uri' => 'https://api.discogs.com/',
             'timeout' => 30,
             'headers' => [
-                'User-Agent' => 'DiscogsClient/4.0.0 +https://github.com/calliostro/php-discogs-api',
+                'User-Agent' => 'DiscogsClient/4.1.0 +https://github.com/calliostro/php-discogs-api',
                 'Accept' => 'application/json',
             ],
         ],

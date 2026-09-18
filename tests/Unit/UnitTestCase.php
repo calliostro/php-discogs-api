@@ -40,7 +40,6 @@ abstract class UnitTestCase extends TestCase
      */
     protected function assertValidResponse(array $response): void
     {
-        $this->assertIsArray($response);
         $this->assertNotEmpty($response);
     }
 
@@ -75,5 +74,21 @@ abstract class UnitTestCase extends TestCase
         $this->assertStringContainsString('token=', $authHeader);
         $this->assertStringNotContainsString('key=', $authHeader);
         $this->assertStringNotContainsString('secret=', $authHeader);
+    }
+
+    /**
+     * Helper to safely extract recorded request from Guzzle history container
+     *
+     * @param array<mixed>|\ArrayAccess<int, mixed> $container
+     */
+    protected function getHistoryRequest(array|\ArrayAccess $container, int $index = 0): \Psr\Http\Message\RequestInterface
+    {
+        $this->assertArrayHasKey($index, $container);
+        $entry = $container[$index];
+        $this->assertIsArray($entry);
+        $this->assertArrayHasKey('request', $entry);
+        $this->assertInstanceOf(\Psr\Http\Message\RequestInterface::class, $entry['request']);
+
+        return $entry['request'];
     }
 }

@@ -467,7 +467,7 @@ final class DiscogsClientTest extends UnitTestCase
         // Test case 1: URI parameter should NOT appear in the query string
         $client->listArtistReleases(4470662, null, null, 10);
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertEquals('/artists/4470662/releases', $request->getUri()->getPath());
         $this->assertEquals('per_page=10', $request->getUri()->getQuery());
 
@@ -496,7 +496,7 @@ final class DiscogsClientTest extends UnitTestCase
         // Test case 1: No URI parameters, all should be query parameters
         $client->search('Ariana Grande', 'artist');
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertEquals('/database/search', $request->getUri()->getPath());
 
         $query = $request->getUri()->getQuery();
@@ -506,7 +506,7 @@ final class DiscogsClientTest extends UnitTestCase
         // Test case 2: Multiple URI parameters should not appear in the query
         $client->listCollectionFolders('testuser');
 
-        $request = $container[1]['request'];
+        $request = $this->getHistoryRequest($container, 1);
         $this->assertEquals('/users/testuser/collection/folders', $request->getUri()->getPath());
         $this->assertEquals('', $request->getUri()->getQuery()); // No query params expected
     }
@@ -532,7 +532,7 @@ final class DiscogsClientTest extends UnitTestCase
         // Test case 1: getArtist should NOT have 'id' in the query when it's in URI
         $client->getArtist(4470662);
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $this->assertEquals('/artists/4470662', $request->getUri()->getPath());
         $this->assertEquals('', $request->getUri()->getQuery()); // Should be empty!
 
@@ -544,7 +544,7 @@ final class DiscogsClientTest extends UnitTestCase
         // Test case 2: listCollectionItems with mixed URI + query parameters
         $client->listCollectionItems('testuser', 0, 10);
 
-        $request = $container[1]['request'];
+        $request = $this->getHistoryRequest($container, 1);
         $this->assertEquals('/users/testuser/collection/folders/0/releases', $request->getUri()->getPath());
         $this->assertEquals('per_page=10', $request->getUri()->getQuery());
 
@@ -590,7 +590,7 @@ final class DiscogsClientTest extends UnitTestCase
 
         $client->getArtist(1);
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $userAgent = $request->getHeaderLine('User-Agent');
 
         // Test that User-Agent follows an expected format (not a specific version)
@@ -621,7 +621,7 @@ final class DiscogsClientTest extends UnitTestCase
 
         $client->getArtist(1);
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $actualUserAgent = $request->getHeaderLine('User-Agent');
 
         $this->assertEquals(
@@ -649,7 +649,7 @@ final class DiscogsClientTest extends UnitTestCase
 
         $client->getArtist(1);
 
-        $request = $container[0]['request'];
+        $request = $this->getHistoryRequest($container, 0);
         $userAgent = $request->getHeaderLine('User-Agent');
         $this->assertEquals('MyCustomApp/1.0', $userAgent);
     }
@@ -689,7 +689,7 @@ final class DiscogsClientTest extends UnitTestCase
 
         // This should work without throwing exceptions
         $result = $client->search();
-        $this->assertIsArray($result);
+        $this->assertEquals([], $result['results']);
     }
 
     public function testMarketplaceEndpoints(): void
@@ -711,23 +711,24 @@ final class DiscogsClientTest extends UnitTestCase
 
         // Test marketplace fee calculation
         $client->getMarketplaceFee(10.00);
-        $request1 = $container[0]['request'];
+        $request1 = $this->getHistoryRequest($container, 0);
         $this->assertEquals('https://api.discogs.com/marketplace/fee/10.00', (string)$request1->getUri());
 
         // Test marketplace fee with currency
         $client->getMarketplaceFeeByCurrency(10.00, 'USD');
-        $request2 = $container[1]['request'];
+        $request2 = $this->getHistoryRequest($container, 1);
         $this->assertEquals('https://api.discogs.com/marketplace/fee/10.00/USD', (string)$request2->getUri());
 
         // Test marketplace price suggestions
         $client->getMarketplacePriceSuggestions(16151073);
-        $request3 = $container[2]['request'];
+        $request3 = $this->getHistoryRequest($container, 2);
         $this->assertEquals(
             'https://api.discogs.com/marketplace/price_suggestions/16151073',
             (string)$request3->getUri()
         );
 
         // Verify no double slashes or URL typos in the path part
+        $this->assertIsArray($container);
         foreach ($container as $transaction) {
             $url = (string)$transaction['request']->getUri();
             $path = parse_url($url, PHP_URL_PATH);
@@ -779,8 +780,6 @@ final class DiscogsClientTest extends UnitTestCase
 
         // Verify the config was loaded
         $config = ConfigCache::get();
-        $this->assertNotNull($config);
-        $this->assertIsArray($config);
         $this->assertArrayHasKey('baseUrl', $config);
     }
 
@@ -952,7 +951,6 @@ final class DiscogsClientTest extends UnitTestCase
 
         $result = $this->client->getRelease(1);
 
-        $this->assertIsArray($result);
         $this->assertEquals('Björk', $result['name']);
         $this->assertEquals('坂本龍一', $result['artist']);
         $this->assertStringContainsString('🎵', $result['notes']);
@@ -983,7 +981,6 @@ final class DiscogsClientTest extends UnitTestCase
 
         $result = $this->client->getArtist(1);
 
-        $this->assertIsArray($result);
         $this->assertCount(1000, $result['releases']);
         $this->assertEquals(1000, $result['pagination']['items']);
     }
@@ -1066,7 +1063,6 @@ final class DiscogsClientTest extends UnitTestCase
             perPage: 50
         );
 
-        $this->assertIsArray($result);
         $this->assertEquals('Billie Eilish', $result['name']);
     }
 
@@ -1104,7 +1100,7 @@ final class DiscogsClientTest extends UnitTestCase
         $method->invokeArgs($this->client, ['nonExistentOperation', [], []]);
 
         // If we reach here without exception, the test passes
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     /**
@@ -1122,7 +1118,6 @@ final class DiscogsClientTest extends UnitTestCase
             username: 'testuser'
         );
 
-        $this->assertIsArray($result);
         $this->assertEquals('testuser', $result['username']);
         $this->assertEquals(123, $result['release_id']);
     }
@@ -1212,7 +1207,7 @@ final class DiscogsClientTest extends UnitTestCase
         ]);
 
         // If we reach here, the validation worked correctly
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     /**
@@ -1318,7 +1313,6 @@ final class DiscogsClientTest extends UnitTestCase
         $csvContent = "Release ID,Condition,Price\n1234,Mint (M),15.99\n5678,Very Good+ (VG+),8.50";
         $result = $this->client->addInventoryUpload($csvContent);
 
-        $this->assertIsArray($result);
         $this->assertTrue($result['success']);
         $this->assertEquals('Upload successful', $result['message']);
     }
@@ -1335,7 +1329,6 @@ final class DiscogsClientTest extends UnitTestCase
         $csvContent = "Release ID,Condition,Price\n1234,Near Mint (NM),18.99";
         $result = $this->client->changeInventoryUpload($csvContent);
 
-        $this->assertIsArray($result);
         $this->assertTrue($result['success']);
         $this->assertEquals(2, $result['updated']);
     }
@@ -1353,7 +1346,6 @@ final class DiscogsClientTest extends UnitTestCase
         $csvContent = "listing_id\n12345678\n98765432";
         $result = $this->client->deleteInventoryUpload($csvContent);
 
-        $this->assertIsArray($result);
         $this->assertTrue($result['success']);
         $this->assertEquals('Upload deleted', $result['message']);
     }
@@ -1388,11 +1380,12 @@ final class DiscogsClientTest extends UnitTestCase
         $client->deleteInventoryUpload($deleteCsv);
 
         // Verify all requests were made to correct endpoints
+        $this->assertIsArray($container);
         $this->assertCount(3, $container);
 
-        $request1 = $container[0]['request'];
-        $request2 = $container[1]['request'];
-        $request3 = $container[2]['request'];
+        $request1 = $this->getHistoryRequest($container, 0);
+        $request2 = $this->getHistoryRequest($container, 1);
+        $request3 = $this->getHistoryRequest($container, 2);
 
         $this->assertEquals('/inventory/upload/add', $request1->getUri()->getPath());
         $this->assertEquals('/inventory/upload/change', $request2->getUri()->getPath());

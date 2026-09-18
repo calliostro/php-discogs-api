@@ -6,16 +6,22 @@ namespace Calliostro\Discogs;
 
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
- * Simple factory for creating Discogs clients with proper authentication
+ * Simple factory for creating Discogs clients with proper authentication and rate-limit handling
  */
 final class DiscogsClientFactory
 {
     /**
      * Create a basic unauthenticated Discogs client
      *
-     * @param array<string, mixed>|GuzzleClient $optionsOrClient
+     * @param array<string, mixed>|GuzzleClient $optionsOrClient Client options (timeout, auto_retry, max_retries, etc.) or pre-configured Guzzle client
      */
     public static function create(array|GuzzleClient $optionsOrClient = []): DiscogsClient
     {
@@ -24,12 +30,15 @@ final class DiscogsClientFactory
             return new DiscogsClient($optionsOrClient);
         }
 
+        $options = $optionsOrClient;
+        self::configureHandler($options);
+
         $config = ConfigCache::get();
 
         // Merge user options with base configuration
-        $clientOptions = array_merge($optionsOrClient, [
+        $clientOptions = array_merge([
             'base_uri' => $config['baseUrl'],
-        ]);
+        ], $options);
 
         return new DiscogsClient(new GuzzleClient($clientOptions));
     }
@@ -93,12 +102,14 @@ final class DiscogsClientFactory
      */
     private static function createClientWithAuth(string $authHeader, array $optionsOrClient): DiscogsClient
     {
+        self::configureHandler($optionsOrClient);
+
         $config = ConfigCache::get();
 
         // Merge user options but ALWAYS override the Authorization header for security
-        $clientOptions = array_merge($optionsOrClient, [
+        $clientOptions = array_merge([
             'base_uri' => $config['baseUrl'],
-        ]);
+        ], $optionsOrClient);
 
         // Ensure our authentication headers take priority over user-provided ones
         $clientOptions['headers'] = array_merge(
@@ -156,5 +167,77 @@ final class DiscogsClientFactory
         $authHeader = 'Discogs token=' . $personalAccessToken;
 
         return self::createClientWithAuth($authHeader, $optionsOrClient);
+    }
+
+    /**
+     * Configures the Guzzle HandlerStack with retry middleware in client options.
+     *
+     * @param array<string, mixed> $options
+     */
+    private static function configureHandler(array &$options): void
+    {
+        if (isset($options['handler']) && $options['handler'] instanceof HandlerStack) {
+            return;
+        }
+
+        $handler = $options['handler'] ?? null;
+        $stack = $handler !== null ? HandlerStack::create($handler) : HandlerStack::create();
+
+        $autoRetry = (bool) ($options['auto_retry'] ?? true);
+        $maxRetries = (int) ($options['max_retries'] ?? 3);
+
+        if ($autoRetry && $maxRetries > 0) {
+            $stack->push(Middleware::retry(
+                static function (
+                    int $retries,
+                    RequestInterface $request,
+                    ?ResponseInterface $response = null,
+                    mixed $reason = null,
+                ) use ($maxRetries): bool {
+                    if ($retries >= $maxRetries) {
+                        return false;
+                    }
+
+                    if ($reason instanceof ConnectException) {
+                        return true;
+                    }
+
+                    if ($response === null && $reason instanceof BadResponseException) {
+                        $response = $reason->getResponse();
+                    }
+
+                    return $response !== null && in_array($response->getStatusCode(), [429, 503], true);
+                },
+                $options['retry_delay'] ?? static fn (int $retries, ?ResponseInterface $response = null): int => self::defaultRetryDelay($retries, $response),
+            ), 'discogs_retry');
+        }
+
+        $options['handler'] = $stack;
+    }
+
+    /**
+     * Calculates the retry delay in milliseconds.
+     * Respects Retry-After header (seconds or HTTP-date) if provided,
+     * otherwise applies exponential backoff (1s, 2s, etc.).
+     */
+    private static function defaultRetryDelay(int $retries, ?ResponseInterface $response = null): int
+    {
+        if ($response !== null && $response->hasHeader('Retry-After')) {
+            $retryAfter = $response->getHeaderLine('Retry-After');
+            if (is_numeric($retryAfter) && (int) $retryAfter > 0) {
+                return (int) $retryAfter * 1000;
+            }
+
+            $time = strtotime($retryAfter);
+            if ($time !== false) {
+                $diff = $time - time();
+                if ($diff > 0) {
+                    return $diff * 1000;
+                }
+            }
+        }
+
+        // Exponential backoff: 1000ms for 1st retry, 2000ms for 2nd retry, etc.
+        return 1000 * (2 ** ($retries - 1));
     }
 }

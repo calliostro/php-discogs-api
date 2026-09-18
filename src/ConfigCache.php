@@ -29,8 +29,11 @@ final class ConfigCache
     public static function get(): array
     {
         if (self::$config === null) {
-            self::$config = require __DIR__ . '/../resources/service.php';
+            /** @var array<string, mixed> $config */
+            $config = require __DIR__ . '/../resources/service.php';
+            self::$config = $config;
         }
+
         return self::$config;
     }
 

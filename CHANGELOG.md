@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-09-18
+
+### Added
+
+- Support for `guzzlehttp/guzzle` 8.0 alongside 7.0 (`^7.0 || ^8.0`).
+- Compatibility testing and CI matrix coverage for PHP 8.1–8.6 and both Guzzle 7 & 8.
+- Built-in retry resilience for Discogs rate limits (`429` and `503`) with exponential backoff and `Retry-After` header support.
+
+### Changed
+
+- Upgraded PHPStan to 2.x (Level 8) and GitHub Actions to Node 24 compatible runners.
+- Updated default User-Agent version to `4.1.0`.
+
+### Fixed
+
+- Fixed documentation example for `search()` named parameter (`q` instead of `query`) ([#4](https://github.com/calliostro/php-discogs-api/pull/4) by [@JamieBradders](https://github.com/JamieBradders)).
+
+### Removed
+
+- Dropped legacy `guzzlehttp/guzzle` 6.5 constraint.
+
 ## [4.0.0](https://github.com/calliostro/php-discogs-api/releases/tag/v4.0.0) – 2025-12-01
 
 ### 🚀 Complete Library Redesign – v4.0 is a Fresh Start

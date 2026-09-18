@@ -1,0 +1,9 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    tmpDir: .phpunit.cache/phpstan
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - identifier: method.alreadyNarrowedType

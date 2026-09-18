@@ -185,7 +185,6 @@ final class SecurityTest extends UnitTestCase
         // Normal, safe input should work fine
         $result = $client->getArtist(139250);
 
-        $this->assertIsArray($result);
         $this->assertEquals(139250, $result['id']);
         $this->assertEquals('Test Artist', $result['name']);
     }
@@ -204,10 +203,7 @@ final class SecurityTest extends UnitTestCase
         $searchResult = $client->search('test');
         $artistResult = $client->getArtist(139250);
 
-        $this->assertIsArray($searchResult);
         $this->assertEquals([], $searchResult['results']);
-
-        $this->assertIsArray($artistResult);
         $this->assertEquals(139250, $artistResult['id']);
     }
 }

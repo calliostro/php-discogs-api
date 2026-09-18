@@ -38,7 +38,7 @@ final class HeaderSecurityTest extends UnitTestCase
 
         $client->search('test');
 
-        $request = $history[0]['request'];
+        $request = $this->getHistoryRequest($history, 0);
 
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertValidPersonalTokenHeader($authHeader);
@@ -78,7 +78,7 @@ final class HeaderSecurityTest extends UnitTestCase
 
         $client->getIdentity();
 
-        $request = $history[0]['request'];
+        $request = $this->getHistoryRequest($history, 0);
 
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertValidOAuthHeader($authHeader);
@@ -111,7 +111,7 @@ final class HeaderSecurityTest extends UnitTestCase
 
         $client->search('test');
 
-        $request = $history[0]['request'];
+        $request = $this->getHistoryRequest($history, 0);
 
         $authHeader = $request->getHeaderLine('Authorization');
         $this->assertValidPersonalTokenHeader($authHeader);
